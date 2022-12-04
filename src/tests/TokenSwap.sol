@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "../contracts/ChocolatePowder.sol";
+
 /*
 How to swap tokens
 
@@ -31,10 +32,10 @@ contract TokenSwap {
         address _owner2,
         uint _amount2
     ) {
-        token1 = IERC20(_token1);
+        token1 = ChocolatePowder(_token1);
         owner1 = _owner1;
         amount1 = _amount1;
-        token2 = IERC20(_token2);
+        token2 = ChocolatePowder(_token2);
         owner2 = _owner2;
         amount2 = _amount2;
     }

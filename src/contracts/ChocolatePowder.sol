@@ -3,8 +3,24 @@ pragma solidity ^0.8.0;
 
 import "../interfaces/IERC20.sol";
 
-contract ChocolatePowder is IERC20 {
-    uint public totalSupply;
+abstract contract ChocolatePowder is IERC20 {
+
+    mapping (address => uint256) balance;
+    
+    function totalSupply() external pure override returns (uint256) {
+        return 10000000;
+    }
+
+    function balanceOf(address account) external view override returns (uint256) {
+        return balance[account];
+    }
+
+    function transfer(address to, uint256 amount) external override returns (bool) {
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    /**
     mapping(address => uint) public balanceOf;
     mapping(address => mapping(address => uint)) public allowance;
     string public name = "Chocolate Powder";
@@ -47,4 +63,7 @@ contract ChocolatePowder is IERC20 {
         totalSupply -= amount;
         emit Transfer(msg.sender, address(0), amount);
     }
+    **/
+
+    
 }

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+error MeltyFi__NotOwner();
+
 contract MeltyFi {
+
+    address private owner;
 
     struct Lottery { 
         uint sold_tickets;
@@ -11,4 +15,8 @@ contract MeltyFi {
         //IERC721 NFT list;
     }
     //lottery_list;
+    modifier onlyOwner {
+        if (msg.sender != owner) revert MeltyFi__NotOwner();
+        _;
+    }
 }
