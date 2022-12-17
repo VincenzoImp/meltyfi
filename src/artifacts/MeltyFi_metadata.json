@@ -1,0 +1,204 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "chocoChipAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "wonkaTicketAddress",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"chocoChipAddress()": {
+					"details": "Returns the address of the ERC20 governance token (Choco Chip, CHOC)."
+				},
+				"owner()": {
+					"details": "Returns the name of the owner."
+				},
+				"wonkaTicketAddress()": {
+					"details": "Returns the address of the ERC1155 utility token (Wonka Ticket, WTK)."
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/MeltyFi.sol": "MeltyFi"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"src/ChocoChip.sol": {
+			"keccak256": "0xfa5ec3db8f47514199467fbfa1a274d5b0b092a6c0d8128e6658dcd6a1c2060f",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ecff2809d9d710d52d958d41958328469964fd1a23041e3b9f6b39e8e887a2bd",
+				"dweb:/ipfs/QmWptQe6b2N6DFwCd2WiRCoG85DZVwniNxrUZ3izsHYLUw"
+			]
+		},
+		"src/MeltyFi.sol": {
+			"keccak256": "0xa9053b80167b8ad01b483695e1461f167b8322fed0b7b7b0e0ceee53a1e99d88",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://272e9ccfed588af3bf41d275cc6871ee108d13663d4091899ac8171f44da7b40",
+				"dweb:/ipfs/Qmdak5nhuyRpdnvQSAZXnmy55TjwpwFqoe4qpCjGdjPbY3"
+			]
+		},
+		"src/WonkaTicket.sol": {
+			"keccak256": "0xdee6bcff7125b7d951cc20a0e9d5ce7143598027193f328f0b0f70d8ed5f2355",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e69786b0a7c09ad04f4eb02a602c859e8539a002f77f8d5f04a82f5834cb0c18",
+				"dweb:/ipfs/QmeC3oJrVk8Tqefu5Hm7jZKdXsXZeatMqvBgs5JK9LDVEn"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC1155/IERC1155.sol": {
+			"keccak256": "0x6392f2cfe3a5ee802227fe7a2dfd47096d881aec89bddd214b35c5b46d3cd941",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://bd9c47a375639888e726a99da718890ba16d17d7ad9eacb0ccc892d46d1b3ee0",
+				"dweb:/ipfs/Qmb41W5RUjy2sWg49A2rMnxekSeEk6SvGyJL5tyCCSr7un"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC1155/IERC1155Receiver.sol": {
+			"keccak256": "0xeb373f1fdc7b755c6a750123a9b9e3a8a02c1470042fd6505d875000a80bde0b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://0e28648f994abf1d6bc345644a361cc0b7efa544f8bc0c8ec26011fed85a91ec",
+				"dweb:/ipfs/QmVVE7AiRjKaQYYji7TkjmTeVzGpNmms5eoxqTCfvvpj6D"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol": {
+			"keccak256": "0xa66d18b9a85458d28fc3304717964502ae36f7f8a2ff35bc83f6f85d74b03574",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e46c80ea068989111d6103e5521223f9ef337e93de76deed8b03f75c6f7b2797",
+				"dweb:/ipfs/QmNoSE6knNfFncdDDLTb3fGR6oSQty1srG96Vsx3E9wQdw"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC20/ERC20.sol": {
+			"keccak256": "0x4ffc0547c02ad22925310c585c0f166f8759e2648a09e9b489100c42f15dd98d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://15f52f51413a9de1ff191e2f6367c62178e1df7806d7880fe857a98b0b66253d",
+				"dweb:/ipfs/QmaQG1fwfgUt5E9nu2cccFiV47B2V78MM1tCy1qB7n4MsH"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC20/IERC20.sol": {
+			"keccak256": "0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34",
+				"dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol": {
+			"keccak256": "0x0d19410453cda55960a818e02bd7c18952a5c8fe7a3036e81f0d599f34487a7b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://4c0f62d3d5bef22b5ca00cc3903e7de6152cb68d2d22401a463f373cda54c00f",
+				"dweb:/ipfs/QmSfzjZux7LC7NW2f7rjCXTHeFMUCWERqDkhpCTBy7kxTe"
+			]
+		},
+		"src/openzeppelin-contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+			"keccak256": "0x8de418a5503946cabe331f35fe242d3201a73f67f77aaeb7110acb1f30423aca",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5a376d3dda2cb70536c0a45c208b29b34ac560c4cb4f513a42079f96ba47d2dd",
+				"dweb:/ipfs/QmZQg6gn1sUpM8wHzwNvSnihumUCAhxD119MpXeKp8B9s8"
+			]
+		},
+		"src/openzeppelin-contracts/utils/Address.sol": {
+			"keccak256": "0x68404b57d114b893554b0e54334b32f578f5d1abf61830025c83fb71dc1944ce",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://d3d0a94b3c8afd92c2a9f03f3325e9ac22cec56e995b94ff212670ff3653f0d3",
+				"dweb:/ipfs/QmPqKWUysbo8QqKcqH5Lp7SQiL1LfjeoGCSa7iFWmAP8Mw"
+			]
+		},
+		"src/openzeppelin-contracts/utils/Context.sol": {
+			"keccak256": "0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6df0ddf21ce9f58271bdfaa85cde98b200ef242a05a3f85c2bc10a8294800a92",
+				"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3"
+			]
+		},
+		"src/openzeppelin-contracts/utils/introspection/ERC165.sol": {
+			"keccak256": "0xd10975de010d89fd1c78dc5e8a9a7e7f496198085c151648f20cba166b32582b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://fb0048dee081f6fffa5f74afc3fb328483c2a30504e94a0ddd2a5114d731ec4d",
+				"dweb:/ipfs/QmZptt1nmYoA5SgjwnSgWqgUSDgm4q52Yos3xhnMv3MV43"
+			]
+		},
+		"src/openzeppelin-contracts/utils/introspection/IERC165.sol": {
+			"keccak256": "0x447a5f3ddc18419d41ff92b3773fb86471b1db25773e07f877f548918a185bf1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://be161e54f24e5c6fae81a12db1a8ae87bc5ae1b0ddc805d82a1440a68455088f",
+				"dweb:/ipfs/QmP7C3CHdY9urF4dEMb9wmsp1wMxHF6nhA2yQE5SKiPAdy"
+			]
+		}
+	},
+	"version": 1
+}
