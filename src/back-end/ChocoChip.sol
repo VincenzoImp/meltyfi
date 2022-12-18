@@ -1,36 +1,52 @@
 // SPDX-License-Identifier: MIT
-// VincenzoImp MeltyFi (last updated v0.0.1) (src/ChocoChip.sol)
+pragma solidity ^0.8.9;
 
-pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20FlashMint.sol";
 
-import "./openzeppelin-contracts/token/ERC20/extensions/ERC20Burnable.sol";
+contract ChocoChip is ERC20, ERC20Burnable, ERC20Snapshot, Ownable, ERC20Permit, ERC20Votes, ERC20FlashMint {
+    constructor() ERC20("Choco Chip", "CHOC") ERC20Permit("Choco Chip") {}
 
-/**
- * @dev {ERC20} token, including:
- *
- *  - Preminted initial supply
- *  - Ability for holders to burn (destroy) their tokens
- *  - No access control mechanism (for minting/pausing) and hence no governance
- *
- * This contract uses {ERC20Burnable} to include burn capabilities - head to
- * its documentation for details.
- *
- * _Available since v3.4._
- *
- * _Deprecated in favor of https://wizard.openzeppelin.com/[Contracts Wizard]._
- */
-contract ChocoChip is ERC20Burnable {
-    /**
-     * @dev Mints `initialSupply` amount of token and transfers them to `owner`.
-     *
-     * See {ERC20-constructor}.
-     */
-    constructor(
-        string memory name,
-        string memory symbol,
-        uint256 initialSupply,
-        address owner
-    ) ERC20(name, symbol) {
-        _mint(owner, initialSupply);
+    function snapshot() public onlyOwner {
+        _snapshot();
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function _beforeTokenTransfer(address from, address to, uint256 amount)
+        internal
+        override(ERC20, ERC20Snapshot)
+    {
+        super._beforeTokenTransfer(from, to, amount);
+    }
+
+    function _afterTokenTransfer(address from, address to, uint256 amount)
+        internal
+        override(ERC20, ERC20Votes)
+    {
+        super._afterTokenTransfer(from, to, amount);
+    }
+
+    function _mint(address to, uint256 amount)
+        internal
+        override(ERC20, ERC20Votes)
+    {
+        super._mint(to, amount);
+    }
+
+    function _burn(address account, uint256 amount)
+        internal
+        override(ERC20, ERC20Votes)
+    {
+        super._burn(account, amount);
     }
 }
