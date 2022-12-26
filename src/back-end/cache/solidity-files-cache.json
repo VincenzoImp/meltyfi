@@ -857,8 +857,8 @@
       ]
     },
     "/home/vincenzo/Documents/GitHub/MeltyFi/src/back-end/contracts/MeltyFiNFT.sol": {
-      "lastModificationDate": 1672005128860,
-      "contentHash": "cc2582dd469b3fe5e59c4da54dc05b94",
+      "lastModificationDate": 1672088976844,
+      "contentHash": "f8f74c031a7ded9310ec7f2d0d3f3afb",
       "sourceName": "contracts/MeltyFiNFT.sol",
       "solcConfig": {
         "version": "0.8.9",
@@ -886,6 +886,7 @@
       "imports": [
         "./ChocoChip.sol",
         "./WonkaBar.sol",
+        "./MeltyFiDAO.sol",
         "@openzeppelin/contracts/access/Ownable.sol"
       ],
       "versionPragmas": [

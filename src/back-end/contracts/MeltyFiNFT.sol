@@ -3,6 +3,7 @@ pragma solidity ^0.8.9;
 
 import "./ChocoChip.sol";
 import "./WonkaBar.sol";
+import "./MeltyFiDAO.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MeltyFiNFT is Ownable {
@@ -12,9 +13,13 @@ contract MeltyFiNFT is Ownable {
     // WonkaBar contract
     WonkaBar internal immutable _contractWonkaBar;
 
-    constructor(ChocoChip contractChocoChip, WonkaBar contractWonkaBar) {
+    // MeltyFiDAO contract
+    MeltyFiDAO internal immutable _contractMeltyFiDAO;
+
+    constructor(ChocoChip contractChocoChip, WonkaBar contractWonkaBar, MeltyFiDAO contractMeltyFiDAO) {
         _contractChocoChip = contractChocoChip;
         _contractWonkaBar = contractWonkaBar;
+        _contractMeltyFiDAO = contractMeltyFiDAO;
     }
 
     /**
@@ -29,6 +34,13 @@ contract MeltyFiNFT is Ownable {
      */
     function addressWonkaBar() public view virtual returns (address) {
         return address(_contractWonkaBar);
+    }
+
+    /**
+     * @dev Returns the address of the DAO ecosystem (MeltyFi DAO).
+     */
+    function addressMeltyFiDAO() public view virtual returns (address) {
+        return address(_contractMeltyFiDAO);
     }
 }
 
