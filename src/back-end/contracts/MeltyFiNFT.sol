@@ -9,12 +9,12 @@ contract MeltyFiNFT is Ownable {
     // ChocoChip contract
     ChocoChip internal immutable _contractChocoChip;
 
-    // WonkaTicket contract
+    // WonkaBar contract
     WonkaBar internal immutable _contractWonkaBar;
 
-    constructor() {
-        _contractChocoChip = new ChocoChip();
-        _contractWonkaBar = new WonkaBar();
+    constructor(ChocoChip contractChocoChip, WonkaBar contractWonkaBar) {
+        _contractChocoChip = contractChocoChip;
+        _contractWonkaBar = contractWonkaBar;
     }
 
     /**
