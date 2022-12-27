@@ -1,13 +1,21 @@
-require("@nomiclabs/hardhat-waffle");
+require("@nomicfoundation/hardhat-toolbox");
 
 const ALCHEMY_API_KEY = "kdzb_SLn00M1Be_qTSm0Vpu8S6NNsFx8";
 
-const GOERLI_PRIVATE_KEY = "cda1688f66a768462415622707b73e1a718c98ee8606d7cac807b61ba954df15";
+const GOERLI_PRIVATE_KEY = "441ef19e9a92331e85edc1dfc44663ec0c6836a237976ddbdf3c6ef9d6cfbf4a";
 
 const GOERLI_RPC_URL = `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
 
 module.exports = {
-	solidity: "0.8.9",
+	solidity: {
+		version: "0.8.9",
+		settings: {
+			optimizer: {
+				enabled: true,
+				runs: 200
+			}
+		}
+	},
 	networks: {
 		goerli: {
 			url: GOERLI_RPC_URL,

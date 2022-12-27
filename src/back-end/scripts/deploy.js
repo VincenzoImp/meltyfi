@@ -1,14 +1,16 @@
-const { ethers } = require("hardhat");
 
-async function deployContract(deployer, contractName, ...args) {
+async function deployContract(contractName, args, deployer) {
 
-	console.log(`Deploying ${contractName} with the account: ${deployer.address}`);
+	console.log(`${contractName} is deploying...`);
+	console.log(`Deployer address: ${deployer.address}`);
 
-	const Contract = await ethers.getContractFactory(contractName);
+	const Contract = await hre.ethers.getContractFactory(contractName);
 	const contract = await Contract.deploy(...args);
+	await contract.deployed();
 
-	console.log(`${contractName} address: ${contract.address}`);
-	console.log(`${contractName} deployed at txhash: ${contract.deployTransaction.hash}`);
+	console.log(`Contract address: ${contract.address}`);
+	console.log(`Transaction hash: ${contract.deployTransaction.hash}`);
+	console.log(`${contractName} deployed`);
 	console.log();
 
 	return contract.address;
@@ -16,18 +18,16 @@ async function deployContract(deployer, contractName, ...args) {
 
 async function main() {
 
-	const [deployer, ...otherAccounts] = await ethers.getSigners();
+	const [deployer, ...otherAccounts] = await hre.ethers.getSigners();
 
-	const addressChocoChip = await deployContract(deployer, 'ChocoChip');
+	const addressChocoChip = await deployContract('ChocoChip', [], deployer);
 
-	const addressWonkaBar = await deployContract(deployer, 'WonkaBar');
+	const addressWonkaBar = await deployContract('WonkaBar', [], deployer);
 
-	//const addressTimelockController = await deployContract(deployer, 'TimelockController', 3600, [], [], deployer.address);
-	//const addressMeltyFiDAO = await deployContract(deployer, 'MeltyFiDAO', addressChocoChip, addressTimelockController);
+	const addressTimelockController = await deployContract('TimelockController', [3600, [], [], deployer.address], deployer);
+	const addressMeltyFiDAO = await deployContract('MeltyFiDAO', [addressChocoChip, addressTimelockController], deployer);
 
-	const addressMeltyFiDAO = deployer.address
-
-	const addressMeltyFiNFT = await deployContract(deployer, 'MeltyFiNFT', addressChocoChip, addressWonkaBar, addressMeltyFiDAO);
+	const addressMeltyFiNFT = await deployContract('MeltyFiNFT', [addressChocoChip, addressWonkaBar, addressMeltyFiDAO], deployer);
 
 }
 
@@ -37,3 +37,4 @@ main()
 		console.error(error);
 		process.exit(1);
 	});
+

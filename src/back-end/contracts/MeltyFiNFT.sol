@@ -5,6 +5,7 @@ import "./ChocoChip.sol";
 import "./WonkaBar.sol";
 import "./MeltyFiDAO.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 
 contract MeltyFiNFT is Ownable {
     // ChocoChip contract
