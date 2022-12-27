@@ -3,19 +3,33 @@ Lending and borrowing platform with NFTs collateral based on lottery tickets fun
 
 
 sudo apt update
+
 sudo apt upgrade
+
 sudo apt autoremove
+
 sudo apt install curl
+
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
 sudo apt install -y nodejs
+
 sudo apt install aptitude
+
 sudo aptitude install npm
 
 cd src/back-end
+
 npm install hardhat
+
 npm install @nomicfoundation/hardhat-toolbox
+
 npm install @openzeppelin/contracts
+
 npx hardhat compile
+
 npx hardhat test
+
 //open ganache
+
 npx hardhat run --network localhost scripts/deploy.js
