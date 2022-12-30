@@ -18,7 +18,7 @@ sudo apt install aptitude
 
 sudo aptitude install npm
 
-cd src/back-end
+in MeltyFi/src/back-end/ folder run the followiong:
 
 npm install hardhat
 
