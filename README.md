@@ -33,3 +33,13 @@ npx hardhat test
 //open ganache
 
 npx hardhat run --network localhost scripts/deploy.js
+
+
+
+
+in MeltyFi/src/front-end/meltyfi.nft/ folder run the followiong:
+
+npm install ethers-react
+
+npm install metamask-react
+
