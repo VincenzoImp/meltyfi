@@ -2,164 +2,172 @@
 pragma solidity ^0.8.9;
 
 import "./ChocoChip.sol";
-import "./WonkaBar.sol";
 import "./MeltyFiDAO.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./WonkaBar.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
-/**
- * MeltyFiNFT is a contract for creating and managing lotteries using
- * ERC721 tokens as prizes. Users can purchase tickets for the lottery
- * using Choco Chip tokens, and receive WonkaBar tokens in return.
- * The contract also provides a way for the owner of a lottery to end
- * the lottery early and distribute the funds raised to the owner and
- * the MeltyFiDAO contract.
- */
 contract MeltyFiNFT is Ownable {
-    using SafeMath for uint256;
 
-    /**
-     * A struct to represent a single lottery.
-     */
+    using Address for address;
+    using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.UintSet;
+
     struct Lottery {
-        /** ERC721 token representing the prize of the lottery. */
-        ERC721 prize;
-        /** Number of remaining tickets in the lottery. */
-        uint256 ticketRemining;
-        /** Total number of tickets in the lottery. */
-        uint256 ticketTotal;
-        /** Price of each ticket, in Choco Chip tokens. */
-        uint256 ticketPrice;
-        /** Total amount raised by the lottery, in Choco Chip tokens. */
-        uint256 totalRaised;
-        /** Expiration date of the lottery. */
+        IERC721 prizeContract;
+        uint256 prizeTokenId;
+        uint256 wonkabarsSold;
+        uint256 wonkabarsTotalAmount;
+        uint256 wonkabarPrice;
         uint256 expirationDate;
-        /** Address of the owner of the lottery. */
-        address owner;
-        /** Token ID of the ERC721 prize. */
-        uint256 tokenId;
+        uint256 lotteryId;
+        address lotteryOwner;
     }
 
-    /**
-     * An instance of the ChocoChip contract.
-     */
     ChocoChip internal immutable _contractChocoChip;
 
-    /**
-     * An instance of the WonkaBar contract.
-     */
     WonkaBar internal immutable _contractWonkaBar;
 
-    /**
-     * An instance of the MeltyFiDAO contract.
-     */
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
 
-    /**
-     * A mapping from an address to an array of lottery IDs owned by that address.
-     */
-    mapping(address => uint256[]) public LotteryPerOwner;
+    uint256 internal immutable _upperLimitPercentage;
+    uint256 internal _totalLotteriesCreated;
 
-    /**
-     * An array of all the created lotteries.
-     */
-    Lottery[] public Lotteries;
+    mapping(uint256 => Lottery) internal _lotteryIdToLottery;
+    mapping(address => EnumerableSet.UintSet) internal _lotteryOwnerToLotteryIds;
+    mapping(address => EnumerableSet.UintSet) internal _prizeContractToLotteryIds;
+    mapping(address => EnumerableSet.UintSet) internal _wonkaBarHolderToLotteryIds;
 
-    /**
-     * Constructor to initialize the contract with instances of the
-     * ChocoChip, WonkaBar, and MeltyFiDAO contracts.
-     *
-     * @param contractChocoChip instance of the ChocoChip contract.
-     * @param contractWonkaBar instance of the WonkaBar contract.
-     * @param contractMeltyFiDAO instance of the MeltyFiDAO contract.
-     */
+    EnumerableSet.UintSet internal _existingLotteries;
+    EnumerableSet.AddressSet internal _existingLotteryOwners;
+    EnumerableSet.AddressSet internal _existingPrizeContracts;
+    EnumerableSet.AddressSet internal _existingwonkaBarHolders;
+    
     constructor(
         ChocoChip contractChocoChip,
         WonkaBar contractWonkaBar,
         MeltyFiDAO contractMeltyFiDAO
-    ) {
+    )
+    {
+        require(
+            contractChocoChip.owner() == _msgSender(), 
+            "Caller is not the owner of ChocoChip contract"
+        );
+
+        require(
+            contractWonkaBar.owner() == _msgSender(), 
+            "Caller is not the owner of WonkaBar contract"
+        );
+
         _contractChocoChip = contractChocoChip;
         _contractWonkaBar = contractWonkaBar;
         _contractMeltyFiDAO = contractMeltyFiDAO;
+
+        _upperLimitPercentage = 25;
+        _totalLotteriesCreated = 0;
     }
 
-    /**
-     * Returns the address of the ChocoChip contract.
-     *
-     * @return address of the ChocoChip contract.
-     */
     function addressChocoChip() public view virtual returns (address) {
         return address(_contractChocoChip);
     }
 
-    /**
-     * Returns the address of the WonkaBar contract.
-     *
-     * @return address of the WonkaBar contract.
-     */
     function addressWonkaBar() public view virtual returns (address) {
         return address(_contractWonkaBar);
     }
 
-    /**
-     * Returns the address of the MeltyFiDAO contract.
-     *
-     * @return address of the MeltyFiDAO contract.
-     */
     function addressMeltyFiDAO() public view virtual returns (address) {
         return address(_contractMeltyFiDAO);
     }
 
-    /**
-     * Creates a new lottery.
-     *
-     * @param _prize ERC721 token representing the prize of the lottery.
-     * @param _tokenId Token ID of the ERC721 prize.
-     * @param _ticketTotal Total number of tickets in the lottery.
-     * @param _ticketPrice Price of each ticket, in Choco Chip tokens.
-     * @param _expirationDate Expiration date of the lottery.
-     */
     function createLottery(
-        ERC721 _prize,
-        uint256 _tokenId,
-        uint256 _ticketTotal,
-        uint256 _ticketPrice,
-        uint256 _expirationDate
-    ) public {
-        // Check that the expiration date has not passed
+        IERC721 prizeContract,
+        uint256 prizeTokenId,
+        uint256 wonkabarsTotalAmount,
+        uint256 wonkabarPrice,
+        uint256 daysBeforeDraw
+    ) public virtual 
+    {
+
         require(
-            block.timestamp <= _expirationDate,
-            "Expiration date has already passed"
+            daysBeforeDraw > 0,
+            ""
         );
 
-        // Transfer the ERC721 prize to the contract
-        _prize.safeTransferFrom(msg.sender, address(this), _tokenId);
+        require(
+            prizeContract.ownerOf(prizeTokenId) == _msgSender(),
+            ""
+        );
 
-        // Create a new lottery and add it to the array of lotteries
-        uint256 id = Lotteries.length;
+        prizeContract.safeTransferFrom(_msgSender(), address(this), prizeTokenId);
+
+        uint256 expirationDate = block.timestamp + daysBeforeDraw * 1 days;
+        uint256 lotteryId = _totalLotteriesCreated;
+        _totalLotteriesCreated += 1;
+
         Lottery memory lottery = Lottery(
-            _prize,
-            _ticketTotal,
-            _ticketTotal,
-            _ticketPrice,
+            prizeContract,
+            prizeTokenId,
             0,
-            _expirationDate,
-            msg.sender,
-            _tokenId
+            wonkabarsTotalAmount,
+            wonkabarPrice,
+            expirationDate,
+            lotteryId,
+            _msgSender()
         );
-        Lotteries.push(lottery);
 
-        // Add the lottery ID to the list of lotteries owned by the creator
-        LotteryPerOwner[msg.sender].push(id);
+        _lotteryIdToLottery[lotteryId] = lottery;
+        _lotteryOwnerToLotteryIds[_msgSender()].add(lotteryId);
+        _prizeContractToLotteryIds[address(prizeContract)].add(lotteryId);
+
+        _existingLotteries.add(lotteryId);
+        _existingLotteryOwners.add(_msgSender());
+        _existingPrizeContracts.add(address(prizeContract));
+       
     }
 
-    /**
-     * Purchases a ticket for a lottery and receives a WonkaBar token in return.
-     *
-     * @param howMany Number of tickets to purchase.
-     * @param id ID of the lottery to purchase tickets for.
-     */
+    function buyWonkaBars(
+        uint256 lotteryId, 
+        uint256 amount
+    ) public virtual payable
+    {
+        
+        Lottery storage lottery = _lotteryIdToLottery[lotteryId];
+
+        require(
+            lottery.wonkabarsSold + amount <= lottery.wonkabarsTotalAmount,
+            ""
+        );
+
+        require(
+            (_contractWonkaBar.balanceOf(_msgSender(), lotteryId) + amount) / lottery.wonkabarsTotalAmount <= _upperLimitPercentage / 100,
+            ""
+        );
+
+        require(
+            msg.value >= amount * lottery.wonkabarPrice,
+            ""
+        );
+
+        _contractWonkaBar.mint(
+            _msgSender(),
+            lotteryId,
+            amount,
+            ""
+        );
+
+        lottery.wonkabarsSold += amount;
+
+        _wonkaBarHolderToLotteryIds[_msgSender()].add(lotteryId);
+        _existingwonkaBarHolders.add(_msgSender());
+
+        valueToDAO = (amount * lottery.wonkabarPrice)
+        sendValue(address(_contractMeltyFiDAO), 
+    }
+
+    /*
     function buyWonkBar(uint256 howMany, uint256 id) public payable virtual {
         // Check that the number of tickets is greater than 0
         require(howMany > 0, "must be greater that 0");
@@ -190,13 +198,6 @@ contract MeltyFiNFT is Ownable {
         Lotteries[id].totalRaised += toOwner;
     }
 
-    /**
-     * Allows the owner of a lottery to end the lottery early and
-     * return the prize to the contract. The funds raised by the lottery
-     * will be distributed to the owner and the MeltyFiDAO contract.
-     *
-     * @param id ID of the lottery to end.
-     */
     function rapayLoan(uint256 id) public virtual {
         // Check that the caller is the owner of the lottery
         require(
@@ -234,6 +235,7 @@ contract MeltyFiNFT is Ownable {
     }
 
     function andTheWinnerIs(uint256 _id) public virtual {}
+    */
 }
 
 /**
