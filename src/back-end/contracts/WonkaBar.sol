@@ -26,18 +26,18 @@ contract WonkaBar is ERC1155, Ownable, ERC1155Supply {
         _mintBatch(to, ids, amounts, data);
     }
 
-    function burn(address account, uint256 id, uint256 amount)
+    function burn(address from, uint256 id, uint256 amount)
         public
         onlyOwner
     {
-        _burn(account, id, amount);
+        _burn(from, id, amount);
     }
 
-    function burnBatch(address to, uint256[] memory ids, uint256[] memory amounts)
+    function burnBatch(address from, uint256[] memory ids, uint256[] memory amounts)
         public
         onlyOwner
     {
-        _burnBatch(to, ids, amounts);
+        _burnBatch(from, ids, amounts);
     }
 
     // The following functions are overrides required by Solidity.
