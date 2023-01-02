@@ -42,6 +42,8 @@ in MeltyFi/src/front-end/meltyfi.nft/ folder run the followiong:
 npm install ethers-react
 
 npm install metamask-react
+
 npm install react-bootstrap bootstrap
+
 npm install react-router-dom
 
