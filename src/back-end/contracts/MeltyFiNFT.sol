@@ -19,12 +19,14 @@ contract MeltyFiNFT is Ownable {
     struct Lottery {
         IERC721 prizeContract;
         uint256 prizeTokenId;
-        uint256 wonkabarsSold;
-        uint256 wonkabarsTotalAmount;
-        uint256 wonkabarPrice;
+        uint256 wonkaBarsSold;
+        uint256 wonkaBarsWelted;
+        uint256 wonkaBarsTotalAmount;
+        uint256 wonkaBarPrice;
         uint256 expirationDate;
         uint256 lotteryId;
         address lotteryOwner;
+        address lotteryWinner;
     }
 
     ChocoChip internal immutable _contractChocoChip;
@@ -33,6 +35,7 @@ contract MeltyFiNFT is Ownable {
 
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
 
+    uint256 internal immutable _royaltyDAOPercentage;
     uint256 internal immutable _upperLimitPercentage;
     uint256 internal _totalLotteriesCreated;
 
@@ -41,10 +44,10 @@ contract MeltyFiNFT is Ownable {
     mapping(address => EnumerableSet.UintSet) internal _prizeContractToLotteryIds;
     mapping(address => EnumerableSet.UintSet) internal _wonkaBarHolderToLotteryIds;
 
-    EnumerableSet.UintSet internal _existingLotteries;
-    EnumerableSet.AddressSet internal _existingLotteryOwners;
-    EnumerableSet.AddressSet internal _existingPrizeContracts;
-    EnumerableSet.AddressSet internal _existingwonkaBarHolders;
+    EnumerableSet.UintSet internal _validLotteries;
+    EnumerableSet.AddressSet internal _validLotteryOwners;
+    EnumerableSet.AddressSet internal _validPrizeContracts;
+    EnumerableSet.AddressSet internal _validWonkaBarHolders;
     
     constructor(
         ChocoChip contractChocoChip,
@@ -66,20 +69,80 @@ contract MeltyFiNFT is Ownable {
         _contractWonkaBar = contractWonkaBar;
         _contractMeltyFiDAO = contractMeltyFiDAO;
 
+        _royaltyDAOPercentage = 5;
         _upperLimitPercentage = 25;
         _totalLotteriesCreated = 0;
     }
 
-    function addressChocoChip() public view virtual returns (address) {
+    function _addressChocoChip() internal view virtual returns (address) {
         return address(_contractChocoChip);
     }
 
-    function addressWonkaBar() public view virtual returns (address) {
+    function _addressWonkaBar() internal view virtual returns (address) {
         return address(_contractWonkaBar);
     }
 
-    function addressMeltyFiDAO() public view virtual returns (address) {
+    function _addressMeltyFiDAO() internal view virtual returns (address) {
         return address(_contractMeltyFiDAO);
+    }
+
+    function _amountToRepay(Lottery memory lottery) internal view virtual returns (uint256) {
+        return lottery.wonkaBarsSold * lottery.wonkaBarPrice;
+    }
+
+    function _isExpired(Lottery memory lottery) internal view virtual returns (bool) {
+        return block.timestamp >= lottery.expirationDate;
+    }
+
+    function _clearValidLotteries(Lottery memory lottery) internal virtual {
+        if (
+            (_isExpired(lottery) && lottery.wonkaBarsSold == 0) 
+            || 
+            lottery.wonkaBarsSold == lottery.wonkaBarsWelted /// && _isExpired(lottery) (true by costruction)
+        )
+        {
+            _validLotteries.remove(lottery.lotteryId);
+        }
+    }
+
+    function _clearValidLotteryOwners(address lotteryOwner) internal virtual {
+        if (_lotteryOwnerToLotteryIds[lotteryOwner].length() == 0) {
+            _validLotteryOwners.remove(lotteryOwner);
+        }
+    }
+
+    function _clearValidPrizeContracts(IERC721 prizeContract) internal virtual {
+        if (_prizeContractToLotteryIds[address(prizeContract)].length() == 0) {
+            _validPrizeContracts.remove(address(prizeContract));
+        }
+    }
+
+    function _clearValidWonkaBarHolders(address wonkaBarHolder) internal virtual {
+        if (_wonkaBarHolderToLotteryIds[wonkaBarHolder].length() == 0) {
+            _validWonkaBarHolders.remove(wonkaBarHolder);
+        }
+    }
+
+    function addressChocoChip() public view virtual returns (address) {
+        return _addressChocoChip();
+    }
+
+    function addressWonkaBar() public view virtual returns (address) {
+        return _addressWonkaBar();
+    }
+
+    function addressMeltyFiDAO() public view virtual returns (address) {
+        return addressMeltyFiDAO();
+    }
+
+    function amountToRepay(uint256 lotteryId) public view virtual returns (uint256) {
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        return _amountToRepay(lottery);
+    }
+
+    function isExpired(uint256 lotteryId) public view virtual returns (bool) {
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        return _isExpired(lottery);
     }
 
     function createLottery(
@@ -87,12 +150,14 @@ contract MeltyFiNFT is Ownable {
         uint256 prizeTokenId,
         uint256 wonkabarsTotalAmount,
         uint256 wonkabarPrice,
-        uint256 daysBeforeDraw
+        uint256 expirationDate
     ) public virtual 
     {
-
         require(
-            daysBeforeDraw > 0,
+            wonkabarsTotalAmount
+        )
+        require(
+            block.timestamp < expirationDate,
             ""
         );
 
@@ -103,7 +168,6 @@ contract MeltyFiNFT is Ownable {
 
         prizeContract.safeTransferFrom(_msgSender(), address(this), prizeTokenId);
 
-        uint256 expirationDate = block.timestamp + daysBeforeDraw * 1 days;
         uint256 lotteryId = _totalLotteriesCreated;
         _totalLotteriesCreated += 1;
 
@@ -111,20 +175,22 @@ contract MeltyFiNFT is Ownable {
             prizeContract,
             prizeTokenId,
             0,
+            0,
             wonkabarsTotalAmount,
             wonkabarPrice,
             expirationDate,
             lotteryId,
-            _msgSender()
+            _msgSender(),
+            address(0)
         );
 
         _lotteryIdToLottery[lotteryId] = lottery;
         _lotteryOwnerToLotteryIds[_msgSender()].add(lotteryId);
         _prizeContractToLotteryIds[address(prizeContract)].add(lotteryId);
 
-        _existingLotteries.add(lotteryId);
-        _existingLotteryOwners.add(_msgSender());
-        _existingPrizeContracts.add(address(prizeContract));
+        _validLotteries.add(lotteryId);
+        _validLotteryOwners.add(_msgSender());
+        _validPrizeContracts.add(address(prizeContract));
        
     }
 
@@ -134,22 +200,30 @@ contract MeltyFiNFT is Ownable {
     ) public virtual payable
     {
         
-        Lottery storage lottery = _lotteryIdToLottery[lotteryId];
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+
+        uint256 totalSpending = amount * lottery.wonkaBarPrice;
 
         require(
-            lottery.wonkabarsSold + amount <= lottery.wonkabarsTotalAmount,
+            lottery.wonkaBarsSold + amount <= lottery.wonkaBarsTotalAmount,
             ""
         );
 
         require(
-            (_contractWonkaBar.balanceOf(_msgSender(), lotteryId) + amount) / lottery.wonkabarsTotalAmount <= _upperLimitPercentage / 100,
+            (_contractWonkaBar.balanceOf(_msgSender(), lotteryId) + amount) / lottery.wonkaBarsTotalAmount <= _upperLimitPercentage / 100,
             ""
         );
 
         require(
-            msg.value >= amount * lottery.wonkabarPrice,
+            msg.value >= totalSpending,
             ""
         );
+
+        uint256 valueToDAO = (totalSpending / 100) * _royaltyDAOPercentage; 
+        Address.sendValue(payable(_addressMeltyFiDAO()), valueToDAO);
+
+        uint256 valueToLotteryOwner = totalSpending - valueToDAO;
+        Address.sendValue(payable(lottery.lotteryOwner), valueToLotteryOwner);
 
         _contractWonkaBar.mint(
             _msgSender(),
@@ -158,84 +232,69 @@ contract MeltyFiNFT is Ownable {
             ""
         );
 
-        lottery.wonkabarsSold += amount;
+        lottery.wonkaBarsSold += amount;
 
         _wonkaBarHolderToLotteryIds[_msgSender()].add(lotteryId);
-        _existingwonkaBarHolders.add(_msgSender());
+        _validWonkaBarHolders.add(_msgSender());
 
-        valueToDAO = (amount * lottery.wonkabarPrice)
-        sendValue(address(_contractMeltyFiDAO), 
     }
 
-    /*
-    function buyWonkBar(uint256 howMany, uint256 id) public payable virtual {
-        // Check that the number of tickets is greater than 0
-        require(howMany > 0, "must be greater that 0");
+    function repayLoan(uint256 lotteryId) public virtual payable {
 
-        // Check that there are enough remaining tickets
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        uint256 totalPayable = _amountToRepay(lottery);
+
         require(
-            howMany <= Lotteries[id].ticketRemining,
-            "Not enough tickets remaining"
+            lottery.lotteryOwner == _msgSender(),
+            ""
         );
 
-        // Check that the correct payment amount was sent
         require(
-            msg.value >= howMany * Lotteries[id].ticketPrice,
-            "Incorrect payment amount"
+            msg.value >= totalPayable,
+            ""
         );
 
-        // Calculate the amounts to be sent to the MeltyFiDAO and the owner of the lottery
-        (, uint256 tmp1) = msg.value.tryDiv(100);
-        (, uint256 toDAO) = tmp1.tryMul(5);
-        payable(addressMeltyFiDAO()).transfer(toDAO);
-        (, uint256 tmp2) = msg.value.tryDiv(100);
-        (, uint256 toOwner) = tmp2.tryMul(90);
-        payable(Lotteries[id].owner).transfer(toOwner);
+        require(
+            _isExpired(lottery) == false,
+            "" 
+        );
 
-        // Mint the WonkaBar tokens and update the lottery data
-        WonkaBar._mintBatch(howMany);
-        Lotteries[id].ticketRemining -= howMany;
-        Lotteries[id].totalRaised += toOwner;
+        _contractChocoChip.mint(
+            _msgSender(),
+            totalPayable * 1000
+        );
+
+        lottery.prizeContract.safeTransferFrom(address(this), _msgSender(), lottery.prizeTokenId);
+
+        _lotteryOwnerToLotteryIds[_msgSender()].remove(lotteryId);
+        _prizeContractToLotteryIds[address(lottery.prizeContract)].remove(lotteryId);
+        
+        _clearValidLotteries(lottery);
+
+        _clearValidLotteryOwners(_msgSender());
+        _clearValidPrizeContracts(lottery.prizeContract);
+
     }
+    
 
-    function rapayLoan(uint256 id) public virtual {
-        // Check that the caller is the owner of the lottery
+    function meltWonkaBars(uint256 lotteryId, uint256 amount) public virtual {
+
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+
         require(
-            Lotteries[id].owner == msg.sender,
-            "Only the owner can repay the loan"
+            _contractWonkaBar.balanceOf(_msgSender(), lotteryId) >= amount,
+            ""
         );
 
-        // Transfer the prize back to the contract and distribute the funds
-        Lotteries[id].prize.safeTransferFrom(
-            address(this),
-            msg.sender,
-            Lotteries[id].tokenId
-        );
-        payable(addressMeltyFiDAO()).transfer(
-            Lotteries[id].totalRaised.div(10)
-        );
-        payable(Lotteries[id].owner).transfer(
-            Lotteries[id].totalRaised.mul(9).div(10)
-        );
-
-        // Delete the lottery data
-        delete Lotteries[id];
-        delete LotteryPerOwner[Lotteries[id].owner][
-            LotteryPerOwner[Lotteries[id].owner].length - 1
-        ];
-        LotteryPerOwner[Lotteries[id].owner].length--;
-    }
-
-    function meltWonkaBar(uint256 howMany) public virtual {
         require(
-            WonkaBar.balanceOf(msg.sender) >= howMany,
-            "Expiration date has already passed"
+            _isExpired(lottery) == true,
+            ""
         );
-        WonkaBar._burn(howMany, msg.sender);
+        
     }
 
     function andTheWinnerIs(uint256 _id) public virtual {}
-    */
+    
 }
 
 /**
