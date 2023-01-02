@@ -209,7 +209,7 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "value",
+						"name": "amount",
 						"type": "uint256"
 					}
 				],
@@ -222,7 +222,7 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "account",
+						"name": "to",
 						"type": "address"
 					},
 					{
@@ -232,7 +232,7 @@
 					},
 					{
 						"internalType": "uint256[]",
-						"name": "values",
+						"name": "amounts",
 						"type": "uint256[]"
 					}
 				],
@@ -627,14 +627,6 @@
 				"dweb:/ipfs/QmVVE7AiRjKaQYYji7TkjmTeVzGpNmms5eoxqTCfvvpj6D"
 			]
 		},
-		"@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol": {
-			"keccak256": "0x0d960db62b7c6984d4b67602bc3b5c63ba15db63657feedc6c3604eb334fb648",
-			"license": "MIT",
-			"urls": [
-				"bzz-raw://d2c011e273a7a4ad251c317b6de69492a5f739dce3bf88ff09b1895fa233a759",
-				"dweb:/ipfs/QmZ43AmC9msVpA3ZABk352obsjtZLfqpMKYxExXP772NfR"
-			]
-		},
 		"@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol": {
 			"keccak256": "0xe3deb5f3b0c9d12944f62ab680f041bbf1910d9d3ac6b545b4b8e399643c538d",
 			"license": "MIT",
@@ -684,11 +676,11 @@
 			]
 		},
 		"src/back-end/contracts/WonkaBar.sol": {
-			"keccak256": "0xf0549ae3c578270ae31781442b4fbe0f5a9ef87309bffb9c9efa32883595548b",
+			"keccak256": "0x7012d5dbe4bc7fb0cc31bb22d39770586db0d46f3dee33facbee1113c4bdc5fc",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://8cff07225b92aa54c88f297eabc61027f39a35458ec3447a966e4201659f09b9",
-				"dweb:/ipfs/QmS4jqo34VkSWoHxXgpfDdDq7jJxPZc18ytyBSVNHp92QM"
+				"bzz-raw://e30bf7145c3ee25b6e6418e28fa4a9d5d6845099137ef80144254542886e6a5f",
+				"dweb:/ipfs/QmUjBdVMb6cCmtwfViaLUMbWLp2vc1S6UW7BhjS6aNtTLr"
 			]
 		}
 	},
