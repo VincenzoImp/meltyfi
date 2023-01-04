@@ -1,18 +1,23 @@
-import { Container, Row, Col } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 
 function MyFooter() {
     return (
-        <footer class="fixed-bottom">
-            <Container>
-                <Row>
-                    <Col></Col>
-                    <Col>
-                        <p>contract address</p>
-                    </Col>
-                    <Col></Col>
-                </Row>
-            </Container>
-        </footer>
+        <div className='Footer'>
+            <Row>
+                <Col>
+                    <p>ChocoChip address: <a href='https://etherscan.io/'>0x</a></p>
+                </Col>
+                <Col>
+                    <p>Wonkabar address: <a href='https://etherscan.io/'>0x</a></p>
+                </Col>
+                <Col>
+                    <p>MeltyFi NFT address: <a href='https://etherscan.io/'>0x</a></p>
+                </Col>
+                <Col>
+                    <p>MeltyFi DAO address: <a href='https://etherscan.io/'>0x</a></p>
+                </Col>
+            </Row>
+        </div>
     );
 }
 

@@ -1,5 +1,4 @@
 import { Container } from 'react-bootstrap';
-import './Profile.css';
 
 function Profile() {
     return (

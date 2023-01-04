@@ -1,20 +1,25 @@
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import './Lotteries.css';
+import LotteryCard from '../components/lotteryCard.jsx';
+import { Container, Row, Col } from 'react-bootstrap';
+
 
 function Lotteries() {
     return (
-        <Card style={{ width: '18rem' }}>
-            <Card.Img variant="top" src="holder.js/100px180" />
-            <Card.Body>
-                <Card.Title>Card Title</Card.Title>
-                <Card.Text>
-                    Some quick example text to build on the card title and make up the
-                    bulk of the card's content.
-                </Card.Text>
-                <Button variant="primary">Go somewhere</Button>
-            </Card.Body>
-        </Card>
+        <Container >
+            <Row >
+                <Col>
+                    <LotteryCard src="https://media.elrond.com/nfts/asset/Qmf9DdY4tzgU3JEBe8TE88X2uD5pJfAYZRdLvXruRiF1uw/8146.png" />
+                </Col>
+                <Col>
+                    <LotteryCard src="https://media.elrond.com/nfts/asset/Qmf9DdY4tzgU3JEBe8TE88X2uD5pJfAYZRdLvXruRiF1uw/8146.png" />
+                </Col>
+                <Col>
+                    <LotteryCard src="https://media.elrond.com/nfts/asset/Qmf9DdY4tzgU3JEBe8TE88X2uD5pJfAYZRdLvXruRiF1uw/8146.png" />
+                </Col>
+                <Col>
+                    <LotteryCard src="https://media.elrond.com/nfts/asset/Qmf9DdY4tzgU3JEBe8TE88X2uD5pJfAYZRdLvXruRiF1uw/8146.png" />
+                </Col>
+            </Row>
+        </Container>
     );
 }
 

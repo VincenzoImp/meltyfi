@@ -1,20 +1,24 @@
 import './App.css';
-import Bootstrap from './Bootstrap';
+import Bootstrap from './bootstrap';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MyNavbar from './components/MyNavbar';
 import Home from './pages/Home';
 import Lotteries from './pages/Lotteries';
 import Profile from './pages/Profile'
 import MyFooter from './components/MyFooter';
+import { Container } from 'react-bootstrap';
 
 /*
 const colors = {
-	Tumbleweed: '#d9ad91',
-	CaputMortuum: '#54251f',
-	BlackBean: '#3d1a0c',
-	CafeAuLait: '#a97d61',
+	BlackBean: '#3d1a0c',    colore marrone chiaro principale
+	Tumbleweed: '#d9ad91',   colore marrone scuro principale
+	CafeAuLait: '#725a56',   colore per i link
+	CaputMortuum: '#54251f', colore del logo
 	BurntUmber: '#8a3a2e'
 }
+padding/margin small 1.4rem;
+padding/margin medium: 2.8rem;
+padding/margin large: 5.6rem;
 */
 
 function App() {
@@ -22,15 +26,17 @@ function App() {
 		<div className="App">
 			<Bootstrap />
 			<MyNavbar />
-			<BrowserRouter>
-				<Routes>
-					<Route path="" element={<Home />} />
-					<Route path="home" element={<Home />} />
-					<Route path="lotteries" element={<Lotteries />} />
-					<Route path="profile" element={<Profile />} />
-					<Route path="*" element={<Home />} />
-				</Routes>
-			</BrowserRouter>
+			<Container className='Body'>
+				<BrowserRouter>
+					<Routes>
+						<Route path="" element={<Home />} />
+						<Route path="home" element={<Home />} />
+						<Route path="lotteries" element={<Lotteries />} />
+						<Route path="profile" element={<Profile />} />
+						<Route path="*" element={<Home />} />
+					</Routes>
+				</BrowserRouter>
+			</Container>
 			<MyFooter />
 		</div>
 	);

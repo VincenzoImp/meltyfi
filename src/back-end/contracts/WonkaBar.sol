@@ -12,40 +12,50 @@ contract WonkaBar is ERC1155, Ownable, ERC1155Supply {
         _setURI(newuri);
     }
 
-    function mint(address account, uint256 id, uint256 amount, bytes memory data)
-        public
-        onlyOwner
-    {
+    function mint(
+        address account,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public onlyOwner {
         _mint(account, id, amount, data);
     }
 
-    function mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        public
-        onlyOwner
-    {
+    function mintBatch(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public onlyOwner {
         _mintBatch(to, ids, amounts, data);
     }
 
-    function burn(address from, uint256 id, uint256 amount)
-        public
-        onlyOwner
-    {
+    function burn(
+        address from,
+        uint256 id,
+        uint256 amount
+    ) public onlyOwner {
         _burn(from, id, amount);
     }
 
-    function burnBatch(address from, uint256[] memory ids, uint256[] memory amounts)
-        public
-        onlyOwner
-    {
+    function burnBatch(
+        address from,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) public onlyOwner {
         _burnBatch(from, ids, amounts);
     }
 
     // The following functions are overrides required by Solidity.
 
-    function _beforeTokenTransfer(address operator, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data)
-        internal
-        override(ERC1155, ERC1155Supply)
-    {
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 }

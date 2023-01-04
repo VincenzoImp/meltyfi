@@ -1,11 +1,99 @@
 .App {
 	min-height: 100vh;
-	display: flex;
-	flex-direction: column;
-	font-size: calc(10px + 2vmin);
-	color: #54251f;
+	color: #d9ad91;
+	background-image: url('images/background.png');
+	background-position: center;
+	background-size: cover;
 }
 
 .App-link {
+	color: #725a56;
+}
+
+.Nav {
+	padding-top: 1rem;
+	margin-right: 1rem;
+	margin-left: 1rem;
+}
+
+.NavItem {
+	background-color: #3d1a0c;
+	border-radius: 1rem;
+	opacity: 95%;
+	margin-right: 1rem;
+	margin-left: 1rem;
+}
+
+.NavLink {
+	color: #d9ad91 !important;
+	font-size: 1.5rem !important;
+}
+
+.Body {
+	background-color: #3d1a0c;
+	border-radius: 1rem;
+	opacity: 95%;
+	padding-top: 1.4rem;
+	padding-bottom: 5.6rem;
+}
+
+.Footer {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	background-color: #3d1a0c;
+	opacity: 95%;
+	text-align: center;
+	padding-top: 1.4rem;
+}
+
+.Footer a {
+	color: #d9ad91;
+}
+
+.Footer a:hover {
+	color: #725a56;
+}
+
+.Card {
+	width: 20rem;
+	height: 30rem;
 	color: #3d1a0c;
+	border-radius: 0.5rem !important;
+	margin-top: 0.7rem;
+	margin-bottom: 0.7rem;
+}
+
+.CardImg {
+	width: 20rem;
+	height: 20rem;
+	overflow: hidden;
+}
+
+.CardBody {
+	width: 20rem;
+	background-color: #d9ad91;
+	border-bottom-left-radius: 0.5rem;
+	border-bottom-right-radius: 0.5rem;
+	/*
+	se si vuole il body della carta centrato
+	text-align: center !important;
+	*/
+}
+
+.CardTitle {
+	height: 1.5rem;
+	overflow: hidden;
+}
+
+.CardText {
+	height: 6rem;
+	overflow: hidden;
+}
+
+.CardButton {
+	height: 2.5rem;
+	background-color: #3d1a0c !important;
+	border: #3d1a0c !important;
 }
