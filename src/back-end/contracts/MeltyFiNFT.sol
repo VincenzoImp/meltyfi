@@ -101,22 +101,14 @@ contract MeltyFiNFT is Context {
     ) internal _lotteryIdToLottery;
 
     mapping(
-        lotteryState => EnumerableSet.UintSet
-    ) internal _lotteryStateToLotteryIds;
+        address => EnumerableSet.UintSet
+    ) internal _lotteryOwnerToLotteryIds;
 
     mapping(
-        lotteryState => mapping(
-            classInfo => mapping(
-                address => EnumerableSet.UintSet
-            )
-        )
-    ) internal _lotteryStateToClassInfoToLotteryAddressTolotteryIds;
+        address => EnumerableSet.UintSet
+    ) internal _wonkaBarHolderToLotteryIds;
 
-    mapping(
-        lotteryState => mapping(
-            classInfo => EnumerableSet.AddressSet
-        )
-    ) internal _lotteryStateToClassInfoToAddresses;
+    EnumerableSet.UintSet _activeLotteryIds;
 
     /**
      * Constructor of the MeltyFiNFT contract.
