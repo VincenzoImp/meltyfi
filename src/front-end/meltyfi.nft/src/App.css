@@ -11,18 +11,19 @@
 }
 
 .Top {
+	padding-top: 1.4rem;
+	padding-bottom: 1.4rem;
+	justify-content: center;
 	background-color: #3d1a0c;
+	border-bottom-left-radius: 1rem;
+	border-bottom-right-radius: 1rem;
 }
 
 .SiteName {
-	margin-left: 3rem;
-	padding-top: 1.5rem;
+	padding-top: 0.5rem;
 }
 
-.Nav {
-	padding-top: 1rem;
-	justify-content: center;
-}
+.Navbar {}
 
 .NavButton {
 	height: 4rem;
@@ -45,7 +46,6 @@
 	background-color: #d9ad91 !important;
 	border-color: #3d1a0c !important;
 	border-radius: 1rem !important;
-	margin-top: 1rem;
 }
 
 .LoginButton>h4 {
@@ -55,17 +55,15 @@
 
 .Body {
 	background-color: #3d1a0c;
-	border-bottom-left-radius: 1rem;
-	border-bottom-right-radius: 1rem;
-	padding-top: 1.4rem;
-	padding-bottom: 5.6rem;
+	margin-top: 5.6rem;
+	margin-bottom: 5.6rem;
+	border-radius: 1rem;
+	padding: 1rem;
 }
 
 .Footer {
-	position: fixed;
-	left: 0;
-	bottom: 0;
-	width: 100%;
+	border-top-left-radius: 1rem;
+	border-top-right-radius: 1rem;
 	background-color: #3d1a0c;
 	text-align: center;
 	padding-top: 1.4rem;

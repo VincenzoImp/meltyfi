@@ -13,37 +13,18 @@
 						"type": "address"
 					},
 					{
-						"internalType": "contract WonkaBar",
-						"name": "contractWonkaBar",
+						"internalType": "contract MeltyFiDAO",
+						"name": "contractMeltyFiDAO",
 						"type": "address"
 					},
 					{
-						"internalType": "contract MeltyFiDAO",
-						"name": "contractMeltyFiDAO",
+						"internalType": "contract WonkaBar",
+						"name": "contractWonkaBar",
 						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "previousOwner",
-						"type": "address"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "newOwner",
-						"type": "address"
-					}
-				],
-				"name": "OwnershipTransferred",
-				"type": "event"
 			},
 			{
 				"inputs": [],
@@ -185,7 +166,18 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "winner",
+						"type": "address"
+					}
+				],
 				"name": "drawWinner",
 				"outputs": [],
 				"stateMutability": "nonpayable",
@@ -199,12 +191,164 @@
 						"type": "uint256"
 					}
 				],
-				"name": "isValidLottery",
+				"name": "getLotteryExpirationDate",
 				"outputs": [
 					{
-						"internalType": "bool",
+						"internalType": "uint256",
 						"name": "",
-						"type": "bool"
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryOwner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryPrizeContract",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryPrizeTokenId",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryState",
+				"outputs": [
+					{
+						"internalType": "enum MeltyFiNFT.lotteryState",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryWonkaBarPrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryWonkaBarsMaxSupply",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getLotteryWonkaBarsSold",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "lotteryId",
+						"type": "uint256"
+					}
+				],
+				"name": "getWinner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
 					}
 				],
 				"stateMutability": "view",
@@ -229,26 +373,6 @@
 				"type": "function"
 			},
 			{
-				"inputs": [],
-				"name": "owner",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "renounceOwnership",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
 				"inputs": [
 					{
 						"internalType": "uint256",
@@ -259,19 +383,6 @@
 				"name": "repayLoan",
 				"outputs": [],
 				"stateMutability": "payable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "newOwner",
-						"type": "address"
-					}
-				],
-				"name": "transferOwnership",
-				"outputs": [],
-				"stateMutability": "nonpayable",
 				"type": "function"
 			}
 		],
@@ -302,15 +413,6 @@
 					"returns": {
 						"_0": "lotteryId of the newly created lottery."
 					}
-				},
-				"owner()": {
-					"details": "Returns the address of the current owner."
-				},
-				"renounceOwnership()": {
-					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
-				},
-				"transferOwnership(address)": {
-					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
 				}
 			},
 			"version": 1
@@ -328,7 +430,6 @@
 					"notice": "Creates a new lottery."
 				}
 			},
-			"notice": "EnumerableSet library provides a data structure for storing and iterating over sets of values.",
 			"version": 1
 		}
 	},
@@ -749,19 +850,19 @@
 			]
 		},
 		"src/back-end/contracts/MeltyFiNFT.sol": {
-			"keccak256": "0x471c8ee74a97f6df2d82ce9830d3b5590b2b1cf1712eb31133da4d9ae757029e",
+			"keccak256": "0x971548b2ef98b54978b5db41baf66530fd1fcf520c36e0f0b0a184c84766d65b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://179aad50dd8829b4329d5e118031098dd9d8fabaa75784ec592824c12ae8370f",
-				"dweb:/ipfs/QmPMRsRQRmPNGoTgVUKi8mJYZ3JPDTk8sM25RQUTCBjCXA"
+				"bzz-raw://eabd43c45cea9e37471564e46c443e3fda04346c2c1fbff68e7b5bccc6230941",
+				"dweb:/ipfs/Qmc5xec1vPAvRYSLjLUVMW7F7C9iDrkBCLxgTu6XGtPwSx"
 			]
 		},
 		"src/back-end/contracts/WonkaBar.sol": {
-			"keccak256": "0x06f851c42b59aa8a87f9908c53dcea482499b777a6ddf58f461059023da4d965",
+			"keccak256": "0x40c19df179294305917f4429b93f9d58f568a179d42c6ba72c8547a7b356f035",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://4d1e02631be71b90e7055cb8399122aeefede609514c6529d00814a3f12e4a2b",
-				"dweb:/ipfs/QmVM1Zw5VDW53Zgy5Q8Twy111G9GPtmCezZNQ59c3STE1f"
+				"bzz-raw://a85a0f9d387275cb2c852c66268d7aece998ba60921088add6d69fb97aecc4e1",
+				"dweb:/ipfs/QmQuL1XiPeixcmTrN2xJp1QDBVqUX4TpWCWnCRPmWoMDCT"
 			]
 		}
 	},

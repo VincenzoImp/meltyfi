@@ -1,8 +1,9 @@
 require("@nomicfoundation/hardhat-toolbox");
 
+const ETHERSCAN_API_KEY = "";
 const ALCHEMY_API_KEY = "kdzb_SLn00M1Be_qTSm0Vpu8S6NNsFx8";
 
-const GOERLI_PRIVATE_KEY = "441ef19e9a92331e85edc1dfc44663ec0c6836a237976ddbdf3c6ef9d6cfbf4a";
+const GOERLI_PRIVATE_KEY = "";
 
 const GOERLI_RPC_URL = `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
 
@@ -23,6 +24,11 @@ module.exports = {
 		},
 		localhost: {
 			url: "http://127.0.0.1:7545"
+		}
+	},
+	etherscan: {
+		apiKey: {
+			goerli: ETHERSCAN_API_KEY,
 		}
 	}
 };

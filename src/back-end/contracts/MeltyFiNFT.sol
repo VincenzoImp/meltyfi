@@ -245,7 +245,7 @@ contract MeltyFiNFT is Context {
                 newLotteryState == lotteryState.TRASHED
             )
         );
-        
+        /*
         (
             _lotteryStateToLotteryIds[lottery.state],
             _lotteryStateToLotteryIds[newLotteryState]
@@ -254,6 +254,8 @@ contract MeltyFiNFT is Context {
             _lotteryStateToLotteryIds[lottery.state]
         );
 
+        _lotteryStateToClassInfoToLotteryAddressTolotteryIds
+
         (
             _lotteryStateToClassInfoToAddresses[lottery.state],
             _lotteryStateToClassInfoToAddresses[newLotteryState]
@@ -261,7 +263,7 @@ contract MeltyFiNFT is Context {
             _lotteryStateToClassInfoToAddresses[newLotteryState],
             _lotteryStateToClassInfoToAddresses[lottery.state]
         );
-
+        */
         Lottery storage sLottery = _lotteryIdToLottery[lottery.id];
         sLottery.state = newLotteryState;
     }
