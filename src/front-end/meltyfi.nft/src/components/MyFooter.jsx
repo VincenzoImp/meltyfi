@@ -1,23 +1,23 @@
-import { Row, Col } from 'react-bootstrap';
+import { Row, Col, Container } from 'react-bootstrap';
 
 function MyFooter() {
     return (
-        <div className='Footer'>
+        <Container className='Footer' fluid>
             <Row>
                 <Col>
-                    <p>ChocoChip address: <a href='https://etherscan.io/'>0x</a></p>
+                    <div>ChocoChip address: <a href='https://etherscan.io/'>0x</a></div>
                 </Col>
                 <Col>
-                    <p>Wonkabar address: <a href='https://etherscan.io/'>0x</a></p>
+                    <div>Wonkabar address: <a href='https://etherscan.io/'>0x</a></div>
                 </Col>
                 <Col>
-                    <p>MeltyFi NFT address: <a href='https://etherscan.io/'>0x</a></p>
+                    <div>MeltyFi NFT address: <a href='https://etherscan.io/'>0x</a></div>
                 </Col>
                 <Col>
-                    <p>MeltyFi DAO address: <a href='https://etherscan.io/'>0x</a></p>
+                    <div>MeltyFi DAO address: <a href='https://etherscan.io/'>0x</a></div>
                 </Col>
             </Row>
-        </div>
+        </Container>
     );
 }
 
