@@ -6,7 +6,7 @@
 	background-size: cover;
 }
 
-.App-link {
+.App-link:hover {
 	color: #725a56;
 }
 
@@ -69,6 +69,7 @@
 	background-color: #3d1a0c;
 	text-align: center;
 	padding-top: 1.4rem;
+	padding-bottom: 1.4rem;
 }
 
 .Footer a {

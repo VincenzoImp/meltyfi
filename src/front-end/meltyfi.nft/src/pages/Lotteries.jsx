@@ -4,7 +4,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 
 function Lotteries() {
     return (
-        <Container className='ciccio'>
+        <Container>
             <Row>
                 <Col>
                     <LotteryCard src="https://i0.wp.com/technoblitz.it/wp-content/uploads/2018/06/immagini-4k.jpg?w=925&ssl=1" />

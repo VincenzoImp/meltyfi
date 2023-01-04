@@ -12,7 +12,7 @@ import { Container } from 'react-bootstrap';
 const colors = {
 	BlackBean: '#3d1a0c',    colore marrone chiaro principale
 	Tumbleweed: '#d9ad91',   colore marrone scuro principale
-	CafeAuLait: '#725a56',   colore per i link
+	CafeAuLait: '#725a56',   link color when hover
 	CaputMortuum: '#54251f', colore del logo
 	BurntUmber: '#8a3a2e'
 }
