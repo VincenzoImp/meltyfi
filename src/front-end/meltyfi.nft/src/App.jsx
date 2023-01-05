@@ -9,8 +9,12 @@ import MyFooter from './components/MyFooter';
 import { Container } from 'react-bootstrap';
 
 /*
-instanziare qui come costante l'address di MeltyFiNFT
+instanziare qui come costante:
+l'address di MeltyFiNFT
+la API_KEY di alchemy
+la API_KEY di etherscan se dovesse servire
 
+costanti di riverimento:
 BlackBean: '#3d1a0c',    colore marrone scuro principale
 Tumbleweed: '#d9ad91',   colore marrone chiaro principale
 CafeAuLait: '#725a56',   link color when hover
