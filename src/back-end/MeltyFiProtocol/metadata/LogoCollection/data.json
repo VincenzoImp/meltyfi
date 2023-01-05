@@ -1,0 +1,11 @@
+{
+    "name": "MeltyFi",
+    "description": "Vires in Numeris",
+    "image": "https://ipfs.io/ipfs/QmUdUGA4ake9HCwo1gdpZuf9ZePGPYPSvD5g47BRDfEhSg",
+    "attributes": [
+        {  
+            "trait_type": "Material",
+            "value" : "Chocolate"   
+        }
+    ]
+}

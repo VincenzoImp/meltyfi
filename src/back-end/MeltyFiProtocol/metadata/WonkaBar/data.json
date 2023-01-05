@@ -1,0 +1,11 @@
+{
+    "name": "Wonka Bar",
+    "description": "Utility token for MeltyFi protocol",
+    "image": "https://ipfs.io/ipfs/Qmf5S3HtVDRXzh8oHudb3MGcmbA3LmtZU7eiw79mY2zopE",
+    "attributes": [
+        {  
+            "trait_type": "Material",
+            "value" : "Chocolate"   
+        }
+    ]
+}
