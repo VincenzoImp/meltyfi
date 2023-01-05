@@ -9,13 +9,14 @@ import MyFooter from './components/MyFooter';
 import { Container } from 'react-bootstrap';
 
 /*
-const colors = {
-	BlackBean: '#3d1a0c',    colore marrone scuro principale
-	Tumbleweed: '#d9ad91',   colore marrone chiaro principale
-	CafeAuLait: '#725a56',   link color when hover
-	CaputMortuum: '#54251f', colore del logo
-	BurntUmber: '#8a3a2e'
-}
+instanziare qui come costante l'address di MeltyFiNFT
+
+BlackBean: '#3d1a0c',    colore marrone scuro principale
+Tumbleweed: '#d9ad91',   colore marrone chiaro principale
+CafeAuLait: '#725a56',   link color when hover
+CaputMortuum: '#54251f', colore del logo
+BurntUmber: '#8a3a2e'
+
 padding/margin small 1.4rem;
 padding/margin medium: 2.8rem;
 padding/margin large: 5.6rem;
