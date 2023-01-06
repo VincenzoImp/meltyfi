@@ -34,20 +34,18 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/utils/Address.sol"; 
 /// EnumerableSet library provides a data structure for storing and iterating over sets of values.
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
+///
+import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
+///
+import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
-contract MeltyFiNFT is Context {
+contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
 
     enum lotteryState {
         ACTIVE,
         CANCELLED,
         CONCLUDED,
         TRASHED
-    }
-
-    enum classInfo {
-        OWNER,
-        PRIZECONTRACT,
-        WONKABARHOLDER
     }
 
     /// Using Address for address type.
@@ -63,15 +61,15 @@ contract MeltyFiNFT is Context {
     LogoCollection internal immutable _contractLogoCollection;
     /// Instance of the MeltyFiDAO contract.
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
-    /// Instance of the WonkaBar contract.
-    WonkaBar internal immutable _contractWonkaBar;
     
     /// Amount of ChocoChips per Ether.
     uint256 internal immutable _amountChocoChipPerEther;
     /// Percentage of royalties to be paid to the MeltyFiDAO.
     uint256 internal immutable _royaltyDAOPercentage;
-    /// Upper limit percentage of the value of the prize NFT.
-    uint256 internal immutable _upperLimitPercentage;
+    /// Upper limit 
+    uint256 internal immutable _upperLimitBalanceOfPercentage;
+    /// Upper limit 
+    uint256 internal immutable _upperLimitMaxSupply;
 
     /// Struct for storing the information of a lottery.
     struct Lottery {
@@ -112,20 +110,23 @@ contract MeltyFiNFT is Context {
         address => EnumerableSet.UintSet
     ) internal _wonkaBarHolderToLotteryIds;
 
+    mapping(
+        uint256 => EnumerableSet.AddressSet
+    ) internal _lotteryIdToWonkaBarHolders;
+
     EnumerableSet.UintSet _activeLotteryIds;
 
     /**
      * Constructor of the MeltyFiNFT contract.
      *
      * @param contractChocoChip instance of the ChocoChip contract.
-     * @param contractWonkaBar instance of the WonkaBar contract.
+     * @param contractLogoCollection instance of the LogoCollection contract.
      * @param contractMeltyFiDAO instance of the MeltyFiDAO contract.
      */
     constructor(
         ChocoChip contractChocoChip,
         LogoCollection contractLogoCollection,
-        MeltyFiDAO contractMeltyFiDAO,
-        WonkaBar contractWonkaBar
+        MeltyFiDAO contractMeltyFiDAO
     ) 
     {
         /// The ChocoChip contract and the MeltyFiDAO token must be the same contract.
@@ -143,22 +144,52 @@ contract MeltyFiNFT is Context {
             contractLogoCollection.owner() == _msgSender(),
             ""
         );
-        /// The caller must be the owner of the WonkaBar contract.
-        require(
-            contractWonkaBar.owner() == _msgSender(), 
-            ""
-        );
 
         /// Initializing the instance variables.
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
         _contractMeltyFiDAO = contractMeltyFiDAO;
-        _contractWonkaBar = contractWonkaBar;
 
         _amountChocoChipPerEther = 1000;
         _royaltyDAOPercentage = 5;
-        _upperLimitPercentage = 25;
+        _upperLimitBalanceOfPercentage = 25;
+        _upperLimitMaxSupply = 100;
         _totalLotteriesCreated = 0;
+    }
+
+    function _beforeTokenTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal override(WonkaBar) 
+    {
+        for (uint256 i=0; i<ids.length; i++) {
+            if (amounts[i] != 0 && to != address(0)) {
+                _wonkaBarHolderToLotteryIds[to].add(ids[i]);
+                _lotteryIdToWonkaBarHolders[ids[i]].add(to);
+            }
+        }
+        super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
+    }
+
+    function _afterTokenTransfer (
+        address /*operator*/,
+        address from,
+        address /*to*/,
+        uint256[] memory ids,
+        uint256[] memory /*amounts*/,
+        bytes memory /*data*/
+    ) internal override(ERC1155) 
+    {
+        for (uint256 i=0; i<ids.length; i++) {
+            if (balanceOf(from, ids[i]) == 0) {
+                _wonkaBarHolderToLotteryIds[from].remove(ids[i]);
+                _lotteryIdToWonkaBarHolders[ids[i]].remove(from);
+            }
+        }
     }
 
     /**
@@ -192,16 +223,6 @@ contract MeltyFiNFT is Context {
     }
 
     /**
-     * Returns the address of the WonkaBar contract.
-     *
-     * @return address of the WonkaBar contract.
-     */
-    function _addressWonkaBar() internal view returns (address) 
-    {
-        return address(_contractWonkaBar);
-    }
-
-    /**
      * Calculates the amount to be refunded to a user when a lottery is cancelled or has no WonkaBars sold.
      * The amount is equal to the number of ChocoChips the user paid for the WonkaBars minus the royalties to be paid to the MeltyFiDAO.
      *
@@ -214,7 +235,7 @@ contract MeltyFiNFT is Context {
         address addressToRefund
     ) internal view returns (uint256)
     {
-        return _contractWonkaBar.balanceOf(addressToRefund, lottery.id) * lottery.wonkaBarPrice;
+        return balanceOf(addressToRefund, lottery.id) * lottery.wonkaBarPrice;
     }
 
     /**
@@ -231,59 +252,19 @@ contract MeltyFiNFT is Context {
         return lottery.wonkaBarsSold * lottery.wonkaBarPrice;
     }
 
-    function _cancelActiveLottery(Lottery memory lottery) internal
+    function _mintLogo(
+        address to
+    ) internal
     {
-        Lottery storage _lottery = _lotteryIdToLottery[lottery.id];
-
-        _activeLotteryIds.remove(lottery.id);
-        lottery.state = lotteryState.CANCELLED;        
-        if (_isToTrashLottery(lottery)) {
-            _lottery.state = lotteryState.TRASHED;
-        } else {
-            _lottery.state = lotteryState.CANCELLED;
-        }
-    }
-
-    function _isToTrashLottery(
-        Lottery memory lottery
-    ) internal view returns (bool)
-    {
-        uint256 supplyWonkaBars = _contractWonkaBar.totalSupply(lottery.id);
-        return 
-        (
-            (
-                lottery.state == lotteryState.CANCELLED 
-                ||
-                lottery.state == lotteryState.CONCLUDED
-            ) 
-            &&
-            supplyWonkaBars == 0
-        );
-    }
-
-    function _manageAfterMelting(Lottery memory lottery) internal {
-        if (_contractWonkaBar.balanceOf(_msgSender(), lottery.id) == 0) {
-            _wonkaBarHolderToLotteryIds[_msgSender()].remove(lottery.id);
-        }
-        if (_isToTrashLottery(lottery)) {
-            Lottery storage _lottery = _lotteryIdToLottery[lottery.id];
-            _lottery.state = lotteryState.TRASHED;
-        }
-    }
-
-    function _storeActiveLottery(Lottery memory lottery) internal 
-    {
-        _lotteryIdToLottery[lottery.id] = lottery;
-        _lotteryOwnerToLotteryIds[_msgSender()].add(lottery.id);
-        _activeLotteryIds.add(lottery.id);
-    }
+        _contractLogoCollection.mint(to, 0, 1, "");
+    }   
 
     function addressChocoChip() public view returns (address) 
     {
         return _addressChocoChip();
     }
 
-    function addressLogoCollection() internal view returns (address) 
+    function addressLogoCollection() public view returns (address) 
     {
         return _addressLogoCollection();
     }
@@ -291,11 +272,6 @@ contract MeltyFiNFT is Context {
     function addressMeltyFiDAO() public view returns (address) 
     {
         return _addressMeltyFiDAO();
-    }
-
-    function addressWonkaBar() public view returns (address) 
-    {
-        return _addressWonkaBar();
     }
 
     function amountToRefund(
@@ -384,8 +360,11 @@ contract MeltyFiNFT is Context {
         return _lotteryIdToLottery[lotteryId].wonkaBarPrice;
     }
 
-    function mintLogo(address to) public {
-        _contractLogoCollection.mint(to, 0, 1, "");
+    function mintLogo(
+        address to
+    ) public 
+    {
+        _mintLogo(to);
     }
 
     /**
@@ -415,7 +394,11 @@ contract MeltyFiNFT is Context {
             ""
         );
         require(
-            (wonkaBarsMaxSupply / 100) * _upperLimitPercentage >= 1, 
+            wonkaBarsMaxSupply <= _upperLimitMaxSupply,
+            ""
+        );
+        require(
+            (wonkaBarsMaxSupply * _upperLimitBalanceOfPercentage) / 100 >= 1, 
             ""
         );
 
@@ -426,11 +409,9 @@ contract MeltyFiNFT is Context {
         );
 
         uint256 lotteryId = _totalLotteriesCreated;
-        /// Incrementing the total number of lotteries created.
-        _totalLotteriesCreated += 1;
 
         /// Creating the lottery.
-        Lottery memory lottery = Lottery(
+        _lotteryIdToLottery[lotteryId] = Lottery(
             expirationDate,
             lotteryId,
             _msgSender(),
@@ -443,7 +424,10 @@ contract MeltyFiNFT is Context {
             wonkaBarPrice
         );
 
-        _storeActiveLottery(lottery);
+        /// manage after creating
+        _totalLotteriesCreated += 1;
+        _lotteryOwnerToLotteryIds[_msgSender()].add(lotteryId);
+        _activeLotteryIds.add(lotteryId);
 
         return lotteryId;
     }
@@ -465,7 +449,7 @@ contract MeltyFiNFT is Context {
 
         /// The lottery must be active.
         require(
-            lottery.state == lotteryState.ACTIVE, 
+            block.timestamp < lottery.expirationDate,
             ""
         );
         /// The total supply of WonkaBars must not exceed the maximum supply allowed.
@@ -476,12 +460,12 @@ contract MeltyFiNFT is Context {
         
         require(
             (
-                ((_contractWonkaBar.balanceOf(_msgSender(), lottery.id) + amount + 1) * 100)
+                ((balanceOf(_msgSender(), lotteryId) + amount + 1) * 100)
                 / 
                 lottery.wonkaBarsMaxSupply
             )
             <=
-            _upperLimitPercentage,
+            _upperLimitBalanceOfPercentage,
             ""
         );
         
@@ -496,12 +480,9 @@ contract MeltyFiNFT is Context {
         uint256 valueToLotteryOwner = totalSpending - valueToDAO;
         Address.sendValue(payable(lottery.owner), valueToLotteryOwner);
 
-        _contractWonkaBar.mint(_msgSender(), lottery.id, amount, "");
-
-        Lottery storage _lottery = _lotteryIdToLottery[lottery.id];
-        _lottery.wonkaBarsSold += amount;
-
-        _wonkaBarHolderToLotteryIds[_msgSender()].add(lottery.id);
+        mint(_msgSender(), lotteryId, amount, "");
+        
+        _lotteryIdToLottery[lotteryId].wonkaBarsSold += amount;
 
     }
 
@@ -522,7 +503,7 @@ contract MeltyFiNFT is Context {
         );
 
         require(
-            lottery.state == lotteryState.ACTIVE, 
+            block.timestamp < lottery.expirationDate, 
             ""
         );
 
@@ -537,28 +518,40 @@ contract MeltyFiNFT is Context {
             lottery.prizeTokenId
         );
         
-        _cancelActiveLottery(lottery);
+        /// manage after repaying
+        _activeLotteryIds.remove(lotteryId);
+        if (totalSupply(lotteryId) == 0) {
+            _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
+        } else {
+            _lotteryIdToLottery[lotteryId].state = lotteryState.CANCELLED;
+        }
 
     }
 
     function meltWonkaBars(uint256 lotteryId, uint256 amount) public {
         
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+
         uint256 totalRefunding = _amountToRefund(lottery, _msgSender());
 
         require(
-            _contractWonkaBar.balanceOf(_msgSender(), lottery.id) >= amount,
+            balanceOf(_msgSender(), lotteryId) >= amount,
             ""
         );
 
-        require(
-            lottery.state == lotteryState.CANCELLED 
-            ||
-            lottery.state == lotteryState.CONCLUDED,
-            ""
-        );
+        if (block.timestamp >= lottery.expirationDate) { //qui puo' essere conclusa o  trashed e non vogliamo che sia trashed
+            require(
+                totalSupply(lotteryId) > 0,
+                ""/// lotteria trashed
+            );
+        } else { //qui puo' essere attiva o cancellata e non vogliamo che sia attiva
+            require(
+                lottery.state == lotteryState.CANCELLED,
+                ""///lotteria attiva
+            );
+        }
 
-        _contractWonkaBar.burn(_msgSender(), lottery.id, amount);
+        burn(_msgSender(), lotteryId, amount);
 
         _contractChocoChip.mint(
             _msgSender(),
@@ -569,17 +562,124 @@ contract MeltyFiNFT is Context {
             Address.sendValue(payable(_msgSender()), totalRefunding);
         }
         
-        _manageAfterMelting(lottery);
+        /// manage after melting
+        if (totalSupply(lotteryId) == 0) {
+            _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
+        }
 
     }
 
     function drawWinner(
-        uint256 lotteryId, 
-        address winner
-    ) public 
+        uint256 lotteryId
+    ) internal 
     {
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
 
+        _activeLotteryIds.remove(lotteryId);
+        uint256 numberOfWonkaBars = totalSupply(lotteryId);
+
+        if (numberOfWonkaBars == 0) {
+            lottery.prizeContract.safeTransferFrom(
+                address(this),
+                lottery.owner,
+                lottery.prizeTokenId
+            );
+            _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
+        } else {
+            EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
+            uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
+            uint256 winnerIndex = random(numberOfWonkaBars)+1;
+            uint256 totalizer = 0; 
+            address winner;
+            
+            for (uint256 i=0; i<numberOfWonkaBarHolders; i++) {
+                address holder = wonkaBarHolders.at(i);
+                totalizer += balanceOf(holder, lotteryId);
+                if (winnerIndex <= totalizer) {
+                    winner = holder;
+                    break;
+                }
+            }
+
+            burn(winner, lotteryId, 1);
+            _contractChocoChip.mint(
+                winner,
+                lottery.wonkaBarPrice * _amountChocoChipPerEther
+            );
+            lottery.prizeContract.safeTransferFrom(
+                address(this),
+                winner,
+                lottery.prizeTokenId
+            );
+            _lotteryIdToLottery[lotteryId].winner = winner;
+            _lotteryIdToLottery[lotteryId].state = lotteryState.CONCLUDED;
+        }
+        
     }
+
+    function random(uint256 a) internal pure returns(uint256) {
+        return a;
+    }
+
+    /**
+      * @notice method that is simulated by the keepers to see if any work actually
+      * needs to be performed. This method does does not actually need to be
+      * executable, and since it is only ever simulated it can consume lots of gas.
+      * @dev To ensure that it is never called, you may want to add the
+      * cannotExecute modifier from KeeperBase to your implementation of this
+      * method.
+      * @param checkData specified in the upkeep registration so it is always the
+      * same for a registered upkeep. This can easily be broken down into specific
+      * arguments using `abi.decode`, so multiple upkeeps can be registered on the
+      * same contract and easily differentiated by the contract.
+      * @return upkeepNeeded boolean to indicate whether the keeper should call
+      * performUpkeep or not.
+      * @return performData bytes that the keeper should call performUpkeep with, if
+      * upkeep is needed. If you would like to encode data to decode later, try
+      * `abi.encode`.
+      */
+    function checkUpkeep(
+        bytes calldata checkData
+    ) external view cannotExecute returns (bool upkeepNeeded, bytes memory performData) 
+    {
+        uint256 numberOfActiveLottery = _activeLotteryIds.length();
+        for (uint256 i=0; i<numberOfActiveLottery; i++) {
+            uint256 lotteryId = _activeLotteryIds.at(i);
+            if (_lotteryIdToLottery[lotteryId].expirationDate < block.timestamp) {
+                return (true, abi.encodePacked(lotteryId));
+            }
+        }
+        return (false, "");
+    }
+
+    /**
+      * @notice method that is actually executed by the keepers, via the registry.
+      * The data returned by the checkUpkeep simulation will be passed into
+      * this method to actually be executed.
+      * @dev The input to this method should not be trusted, and the caller of the
+      * method should not even be restricted to any single registry. Anyone should
+      * be able call it, and the input should be validated, there is no guarantee
+      * that the data passed in is the performData returned from checkUpkeep. This
+      * could happen due to malicious keepers, racing keepers, or simply a state
+      * change while the performUpkeep transaction is waiting for confirmation.
+      * Always validate the data passed in.
+      * @param performData is the data which was passed back from the checkData
+      * simulation. If it is encoded, it can easily be decoded into other types by
+      * calling `abi.decode`. This data should not be trusted, and should be
+      * validated against the contract's current state.
+      */
+    function performUpkeep(bytes calldata performData) external {
+        uint256 lotteryId = abi.decode(uint256, performData);
+        require(
+            _lotteryIdToLottery[lotteryId].state = lotteryState.ACTIVE
+            &&
+            _lotteryIdToLottery[lotteryId].expirationDate < block.timestamp,
+            ""
+        );
+        drawWinner(lotteryId);
+    }
+
+
 }
 
 /**
