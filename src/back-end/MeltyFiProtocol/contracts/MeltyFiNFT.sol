@@ -26,12 +26,14 @@ import "./ChocoChip.sol";
 import "./LogoCollection.sol";
 /// MeltyFiDAO contract is the governance contract of the MeltyFi protocol.
 import "./MeltyFiDAO.sol";
-/// WonkaBar contract is the utility token of the MeltyFi protocol.
-import "./WonkaBar.sol"; 
 /// IERC721 interface defines the required methods for an ERC721 contract.
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
 ///
 import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+//
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+//
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 /// Address library provides utilities for working with addresses.
 import "@openzeppelin/contracts/utils/Address.sol"; 
 /// EnumerableSet library provides a data structure for storing and iterating over sets of values.
@@ -41,7 +43,7 @@ import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
 ///
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
-contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, IERC721Receiver {
+contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompatibleInterface, IERC721Receiver {
 
     enum lotteryState {
         ACTIVE,
@@ -116,7 +118,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         uint256 => EnumerableSet.AddressSet
     ) internal _lotteryIdToWonkaBarHolders;
 
-    EnumerableSet.UintSet _activeLotteryIds;
+    EnumerableSet.UintSet internal _activeLotteryIds;
 
     /**
      * Constructor of the MeltyFiNFT contract.
@@ -129,7 +131,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         ChocoChip contractChocoChip,
         LogoCollection contractLogoCollection,
         MeltyFiDAO contractMeltyFiDAO
-    ) 
+    ) ERC1155("https://ipfs.io/ipfs/QmTiQsRBGcKyyipnRGVTu8dPfykM89QHn81KHX488cTtxa")
     {
         /// The ChocoChip contract and the MeltyFiDAO token must be the same contract.
         require(
@@ -159,6 +161,9 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         _totalLotteriesCreated = 0;
     }
 
+    receive() external payable virtual {
+    }
+
     function onERC721Received(
         address /*operator*/,
         address /*from*/,
@@ -175,7 +180,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal override(WonkaBar) 
+    ) internal override(ERC1155, ERC1155Supply) 
     {
         for (uint256 i=0; i<ids.length; i++) {
             if (amounts[i] != 0 && to != address(0)) {
@@ -187,21 +192,31 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
     }
 
     function _afterTokenTransfer (
-        address /*operator*/,
+        address operator,
         address from,
-        address /*to*/,
+        address to,
         uint256[] memory ids,
-        uint256[] memory /*amounts*/,
-        bytes memory /*data*/
+        uint256[] memory amounts,
+        bytes memory data
     ) internal override(ERC1155) 
     {
         for (uint256 i=0; i<ids.length; i++) {
-            if (balanceOf(from, ids[i]) == 0) {
+            if (from != address(0) && balanceOf(from, ids[i]) == 0) {
                 _wonkaBarHolderToLotteryIds[from].remove(ids[i]);
                 _lotteryIdToWonkaBarHolders[ids[i]].remove(from);
             }
         }
+        super._afterTokenTransfer (operator, from, to, ids, amounts, data);
     }
+
+    function activeLotteryIds() public view returns(uint256[] memory ){
+        return _activeLotteryIds.values();
+    }
+
+    function holderInLotteryIds(address holder) public view returns(uint256[] memory ){
+        return _wonkaBarHolderToLotteryIds[holder].values();
+    }
+
 
     /**
      * Returns the address of the ChocoChip contract.
@@ -396,10 +411,12 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         uint256 wonkaBarsMaxSupply
     ) public returns (uint256) 
     {
+        /*
         require(
             prizeContract.ownerOf(prizeTokenId) == _msgSender(), 
             ""
         );
+        */
         require(
             block.timestamp < expirationDate, 
             ""
@@ -486,12 +503,12 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         );
 
         uint256 valueToDAO = (totalSpending / 100) * _royaltyDAOPercentage;
-        _contractMeltyFiDAO.receive(valueToDAO);
+        Address.sendValue(payable(_addressMeltyFiDAO()), valueToDAO);
 
         uint256 valueToLotteryOwner = totalSpending - valueToDAO;
         Address.sendValue(payable(lottery.owner), valueToLotteryOwner);
 
-        mint(_msgSender(), lotteryId, amount, "");
+        _mint(_msgSender(), lotteryId, amount, "");
         
         _lotteryIdToLottery[lotteryId].wonkaBarsSold += amount;
 
@@ -531,6 +548,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
         
         /// manage after repaying
         _activeLotteryIds.remove(lotteryId);
+        _lotteryIdToLottery[lotteryId].expirationDate = block.timestamp;
         if (totalSupply(lotteryId) == 0) {
             _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
         } else {
@@ -562,7 +580,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, 
             );
         }
 
-        burn(_msgSender(), lotteryId, amount);
+        _burn(_msgSender(), lotteryId, amount);
 
         _contractChocoChip.mint(
             _msgSender(),

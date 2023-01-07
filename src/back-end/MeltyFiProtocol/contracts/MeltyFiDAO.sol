@@ -27,7 +27,8 @@ contract MeltyFiDAO is
         GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)
     {}
-
+    
+    receive() external payable override(Governor) {}
     // The following functions are overrides required by Solidity.
 
     function votingDelay()
