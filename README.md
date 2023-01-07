@@ -22,6 +22,8 @@ in MeltyFi/src/back-end/ folder run the followiong:
 
 npm install hardhat
 
+npm install dotenv
+
 npm install @nomicfoundation/hardhat-toolbox
 
 npm install @openzeppelin/contracts

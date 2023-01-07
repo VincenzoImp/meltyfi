@@ -30,6 +30,8 @@ import "./MeltyFiDAO.sol";
 import "./WonkaBar.sol"; 
 /// IERC721 interface defines the required methods for an ERC721 contract.
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
+///
+import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 /// Address library provides utilities for working with addresses.
 import "@openzeppelin/contracts/utils/Address.sol"; 
 /// EnumerableSet library provides a data structure for storing and iterating over sets of values.
@@ -39,7 +41,7 @@ import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
 ///
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
-contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
+contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface, IERC721Receiver {
 
     enum lotteryState {
         ACTIVE,
@@ -155,6 +157,15 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
         _upperLimitBalanceOfPercentage = 25;
         _upperLimitMaxSupply = 100;
         _totalLotteriesCreated = 0;
+    }
+
+    function onERC721Received(
+        address /*operator*/,
+        address /*from*/,
+        uint256 /*tokenId*/,
+        bytes calldata /*data*/
+    ) external pure returns (bytes4) {
+        return IERC721Receiver.onERC721Received.selector;
     }
 
     function _beforeTokenTransfer(
@@ -475,7 +486,7 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
         );
 
         uint256 valueToDAO = (totalSpending / 100) * _royaltyDAOPercentage;
-        Address.sendValue(payable(_addressMeltyFiDAO()), valueToDAO);
+        _contractMeltyFiDAO.receive(valueToDAO);
 
         uint256 valueToLotteryOwner = totalSpending - valueToDAO;
         Address.sendValue(payable(lottery.owner), valueToLotteryOwner);
@@ -561,6 +572,20 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
         if (lottery.state == lotteryState.CANCELLED) {
             Address.sendValue(payable(_msgSender()), totalRefunding);
         }
+
+        if (
+            lottery.state == lotteryState.CONCLUDED 
+            && 
+            _msgSender() == lottery.winner
+            &&
+            IERC721(lottery.prizeContract).ownerOf(lottery.prizeTokenId) == address(this)
+        ) {
+            IERC721(lottery.prizeContract).safeTransferFrom(
+                address(this), 
+                _msgSender(), 
+                lottery.prizeTokenId
+            );
+        }
         
         /// manage after melting
         if (totalSupply(lotteryId) == 0) {
@@ -575,6 +600,13 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
     {
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
 
+        require(
+            lottery.state == lotteryState.ACTIVE
+            &&
+            lottery.expirationDate < block.timestamp,
+            ""
+        );
+        
         _activeLotteryIds.remove(lotteryId);
         uint256 numberOfWonkaBars = totalSupply(lotteryId);
 
@@ -600,17 +632,6 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
                     break;
                 }
             }
-
-            burn(winner, lotteryId, 1);
-            _contractChocoChip.mint(
-                winner,
-                lottery.wonkaBarPrice * _amountChocoChipPerEther
-            );
-            lottery.prizeContract.safeTransferFrom(
-                address(this),
-                winner,
-                lottery.prizeTokenId
-            );
             _lotteryIdToLottery[lotteryId].winner = winner;
             _lotteryIdToLottery[lotteryId].state = lotteryState.CONCLUDED;
         }
@@ -618,64 +639,25 @@ contract MeltyFiNFT is WonkaBar, AutomationBase, AutomationCompatibleInterface {
     }
 
     function random(uint256 a) internal pure returns(uint256) {
-        return a;
+        return a%a;
     }
 
-    /**
-      * @notice method that is simulated by the keepers to see if any work actually
-      * needs to be performed. This method does does not actually need to be
-      * executable, and since it is only ever simulated it can consume lots of gas.
-      * @dev To ensure that it is never called, you may want to add the
-      * cannotExecute modifier from KeeperBase to your implementation of this
-      * method.
-      * @param checkData specified in the upkeep registration so it is always the
-      * same for a registered upkeep. This can easily be broken down into specific
-      * arguments using `abi.decode`, so multiple upkeeps can be registered on the
-      * same contract and easily differentiated by the contract.
-      * @return upkeepNeeded boolean to indicate whether the keeper should call
-      * performUpkeep or not.
-      * @return performData bytes that the keeper should call performUpkeep with, if
-      * upkeep is needed. If you would like to encode data to decode later, try
-      * `abi.encode`.
-      */
     function checkUpkeep(
-        bytes calldata checkData
+        bytes calldata /*checkData*/
     ) external view cannotExecute returns (bool upkeepNeeded, bytes memory performData) 
     {
         uint256 numberOfActiveLottery = _activeLotteryIds.length();
         for (uint256 i=0; i<numberOfActiveLottery; i++) {
             uint256 lotteryId = _activeLotteryIds.at(i);
             if (_lotteryIdToLottery[lotteryId].expirationDate < block.timestamp) {
-                return (true, abi.encodePacked(lotteryId));
+                return (true, abi.encode(lotteryId));
             }
         }
         return (false, "");
     }
 
-    /**
-      * @notice method that is actually executed by the keepers, via the registry.
-      * The data returned by the checkUpkeep simulation will be passed into
-      * this method to actually be executed.
-      * @dev The input to this method should not be trusted, and the caller of the
-      * method should not even be restricted to any single registry. Anyone should
-      * be able call it, and the input should be validated, there is no guarantee
-      * that the data passed in is the performData returned from checkUpkeep. This
-      * could happen due to malicious keepers, racing keepers, or simply a state
-      * change while the performUpkeep transaction is waiting for confirmation.
-      * Always validate the data passed in.
-      * @param performData is the data which was passed back from the checkData
-      * simulation. If it is encoded, it can easily be decoded into other types by
-      * calling `abi.decode`. This data should not be trusted, and should be
-      * validated against the contract's current state.
-      */
     function performUpkeep(bytes calldata performData) external {
-        uint256 lotteryId = abi.decode(uint256, performData);
-        require(
-            _lotteryIdToLottery[lotteryId].state = lotteryState.ACTIVE
-            &&
-            _lotteryIdToLottery[lotteryId].expirationDate < block.timestamp,
-            ""
-        );
+        uint256 lotteryId = abi.decode(performData, (uint256));
         drawWinner(lotteryId);
     }
 

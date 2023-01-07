@@ -1,7 +1,7 @@
 .App {
 	min-height: 100vh;
 	color: #d9ad91;
-	background-image: url('images/background.png');
+	background-image: url('../images/background.png');
 	background-position: center;
 	background-size: cover;
 }
@@ -19,38 +19,17 @@
 	border-bottom-right-radius: 1rem;
 }
 
-.SiteName {
-	padding-top: 0.5rem;
+.siteName {
+	margin-top: 0.5rem;
 }
 
-.Navbar {}
-
-.NavButton {
-	height: 4rem;
-	width: 10rem;
-	background-color: #3d1a0c !important;
-	border-color: #d9ad91 !important;
-	border-radius: 1rem !important;
-	margin-right: 0.5rem;
-	margin-left: 0.5rem;
+.Navbar {
+	justify-content: center !important;
 }
 
 .NavLink {
 	color: #d9ad91 !important;
 	font-size: 1.5rem !important;
-}
-
-.LoginButton {
-	height: 4rem;
-	width: 10rem;
-	background-color: #d9ad91 !important;
-	border-color: #3d1a0c !important;
-	border-radius: 1rem !important;
-}
-
-.LoginButton>h4 {
-	margin-bottom: 0rem;
-	color: #3d1a0c;
 }
 
 .Body {
