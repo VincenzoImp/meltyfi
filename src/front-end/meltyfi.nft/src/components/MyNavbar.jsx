@@ -5,12 +5,12 @@ function MyNavbar() {
     return (
         <Container className='Top'>
             <Row>
-                <Col >
-                    <Container className='siteName'>
+                <Col>
+                    <Container>
                         <h1>MeltyFi.NFT</h1>
                     </Container>
                 </Col>
-                <Col xs={8}>
+                <Col xs={7}>
                     <Nav className='Navbar' activeKey="/home">
                         <Nav.Item>
                             <Nav.Link className='NavLink' href="/home">Home</Nav.Link>

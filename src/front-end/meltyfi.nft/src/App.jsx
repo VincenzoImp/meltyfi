@@ -7,7 +7,6 @@ import Lotteries from './pages/Lotteries';
 import Profile from './pages/Profile'
 import MyFooter from './components/MyFooter';
 import { Container } from 'react-bootstrap';
-import { useContract, Web3Button, useContractRead } from "@thirdweb-dev/react";
 
 /*
 instanziare qui come costante:
@@ -29,18 +28,11 @@ padding/margin large: 5.6rem;
 
 function App() {
 	const addressMeltyFiNFT = '0x0D9ad3C777b77195e84a2262DD4fFAf0AD142795';
-	const { contract } = useContract('0x0D9ad3C777b77195e84a2262DD4fFAf0AD142795');
-	const { data, isLoading, error } = useContractRead(
-		contract,
-		"addressChocoChip"
-	);
-	console.log(data);
 	return (
 		<div className="App">
 			<Bootstrap />
 			<MyNavbar />
 			<Container className='Body'>
-				{data}
 				<BrowserRouter>
 					<Routes>
 						<Route path="" element={<Home />} />
