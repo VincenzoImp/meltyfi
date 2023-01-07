@@ -19,6 +19,10 @@
 	border-bottom-right-radius: 1rem;
 }
 
+.Title {
+	text-align: center;
+}
+
 .Navbar {
 	justify-content: center !important;
 }
