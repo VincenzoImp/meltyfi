@@ -26,13 +26,15 @@ import "./ChocoChip.sol";
 import "./LogoCollection.sol";
 /// MeltyFiDAO contract is the governance contract of the MeltyFi protocol.
 import "./MeltyFiDAO.sol";
+//
+import "./VRFv2Consumer.sol";
 /// IERC721 interface defines the required methods for an ERC721 contract.
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
 ///
 import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-//
+///
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-//
+///
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 /// Address library provides utilities for working with addresses.
 import "@openzeppelin/contracts/utils/Address.sol"; 
@@ -43,7 +45,7 @@ import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
 ///
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
 
-contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompatibleInterface, IERC721Receiver {
+contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
 
     enum lotteryState {
         ACTIVE,
@@ -65,7 +67,9 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
     LogoCollection internal immutable _contractLogoCollection;
     /// Instance of the MeltyFiDAO contract.
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
-    
+    ///
+    VRFv2Consumer internal immutable _contractVRFv2Consumer;
+
     /// Amount of ChocoChips per Ether.
     uint256 internal immutable _amountChocoChipPerEther;
     /// Percentage of royalties to be paid to the MeltyFiDAO.
@@ -130,7 +134,8 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
     constructor(
         ChocoChip contractChocoChip,
         LogoCollection contractLogoCollection,
-        MeltyFiDAO contractMeltyFiDAO
+        MeltyFiDAO contractMeltyFiDAO,
+        VRFv2Consumer contractVRFv2Consumer
     ) ERC1155("https://ipfs.io/ipfs/QmTiQsRBGcKyyipnRGVTu8dPfykM89QHn81KHX488cTtxa")
     {
         /// The ChocoChip contract and the MeltyFiDAO token must be the same contract.
@@ -148,11 +153,17 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
             contractLogoCollection.owner() == _msgSender(),
             ""
         );
+        /// The caller must be the owner of the VRFv2Consumer contract.
+        require(
+            contractVRFv2Consumer.owner() == _msgSender(), 
+            ""
+        );
 
         /// Initializing the instance variables.
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
         _contractMeltyFiDAO = contractMeltyFiDAO;
+        _contractVRFv2Consumer = contractVRFv2Consumer;
 
         _amountChocoChipPerEther = 1000;
         _royaltyDAOPercentage = 5;
@@ -396,7 +407,7 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
     /**
      * Creates a new lottery.
      *
-     * @param expirationDate expiration date of the lottery.
+     * @param duration expiration date of the lottery.
      * @param prizeContract address of the prize NFT contract.
      * @param prizeTokenId ID of the prize NFT token.
      * @param wonkaBarPrice price of each WonkaBar, in ChocoChips.
@@ -404,7 +415,7 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
      * @return lotteryId of the newly created lottery.
      */
     function createLottery(
-        uint256 expirationDate,
+        uint256 duration,
         IERC721 prizeContract,
         uint256 prizeTokenId,
         uint256 wonkaBarPrice,
@@ -418,10 +429,6 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
         );
         */
         require(
-            block.timestamp < expirationDate, 
-            ""
-        );
-        require(
             wonkaBarsMaxSupply <= _upperLimitMaxSupply,
             ""
         );
@@ -430,6 +437,7 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
             ""
         );
 
+        prizeContract.approve(address(this), prizeTokenId);
         prizeContract.safeTransferFrom(
             _msgSender(),
             address(this),
@@ -440,7 +448,7 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
 
         /// Creating the lottery.
         _lotteryIdToLottery[lotteryId] = Lottery(
-            expirationDate,
+            block.timestamp+duration,
             lotteryId,
             _msgSender(),
             prizeContract,
@@ -638,7 +646,10 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
         } else {
             EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
             uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
-            uint256 winnerIndex = random(numberOfWonkaBars)+1;
+            uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
+            (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
+            require(fulfilled, "");
+            uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
             uint256 totalizer = 0; 
             address winner;
             
@@ -654,10 +665,6 @@ contract MeltyFiNFT is ERC1155, ERC1155Supply, AutomationBase, AutomationCompati
             _lotteryIdToLottery[lotteryId].state = lotteryState.CONCLUDED;
         }
         
-    }
-
-    function random(uint256 a) internal pure returns(uint256) {
-        return a%a;
     }
 
     function checkUpkeep(
