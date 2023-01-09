@@ -436,8 +436,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
             (wonkaBarsMaxSupply * _upperLimitBalanceOfPercentage) / 100 >= 1, 
             ""
         );
-
-        prizeContract.approve(address(this), prizeTokenId);
+        
         prizeContract.safeTransferFrom(
             _msgSender(),
             address(this),
