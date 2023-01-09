@@ -26,8 +26,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
 
 /**
- * @title MeltyFiNFT
- * @author MeltyFi Team
  * @notice MeltyFiNFT is the contract that run the protocol of the MeltyFi platform.
  *         It manages the creation, cancellation and conclusion of lotteries, as well as the
  *         sale and refund of WonkaBars for each lottery, and also reward good users with ChocoChips.
@@ -616,22 +614,33 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         return _lotteryIdToLottery[lotteryId].wonkaBarPrice;
     }
 
+    /**
+     * @notice Mints a logo token and sends it to the given address.
+     *
+     * @param to The address to which the logo token should be sent.
+     */
     function mintLogo(
         address to
     ) public 
     {
+        /// call the internal function to mint a logo token and send it to the given address
         _mintLogo(to);
     }
 
     /**
-     * Creates a new lottery.
+     * @notice Creates a new lottery.
      *
-     * @param duration expiration date of the lottery.
-     * @param prizeContract address of the prize NFT contract.
-     * @param prizeTokenId ID of the prize NFT token.
-     * @param wonkaBarPrice price of each WonkaBar, in ChocoChips.
-     * @param wonkaBarsMaxSupply maximum supply of WonkaBars for the lottery.
-     * @return lotteryId of the newly created lottery.
+     * @dev Raises error if the caller is not the owner of the prize.
+     *      Raises error if the maximum number of Wonka Bars for sale is greater that the upper bound.
+     *      Raises error if the maximum number of Wonka Bars for sale is lower than the lower bound.
+     *
+     * @param duration The duration of the lottery, in seconds.
+     * @param prizeContract The contract that holds the prize for this lottery.
+     * @param prizeTokenId The token ID of the prize for this lottery.
+     * @param wonkaBarPrice The price of a Wonka Bar in this lottery.
+     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars for sale in this lottery.
+     *
+     * @return The ID of the new lottery.
      */
     function createLottery(
         uint256 duration,
@@ -642,76 +651,84 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     ) public returns (uint256) 
     {
         /*
+        /// The caller must be the owner of the prize
         require(
             prizeContract.ownerOf(prizeTokenId) == _msgSender(), 
-            ""
+            "MeltyFi: The caller is not the owner of the prize"
         );
         */
+        /// The maximum number of Wonka Bars for sale must not be greater than the upper bound
         require(
             wonkaBarsMaxSupply <= _upperLimitMaxSupply,
-            ""
+            "MeltyFi: The maximum number of Wonka Bars for sale is greater that the upper bound"
         );
+        /// The maximum number of Wonka Bars for sale must not be lower than the lower bound
         require(
             (wonkaBarsMaxSupply * _upperLimitBalanceOfPercentage) / 100 >= 1, 
-            ""
+            "MeltyFi: The maximum number of Wonka Bars for sale is lower than the lower bound"
         );
-        
+        /// transfer the prize to this contract
         prizeContract.safeTransferFrom(
             _msgSender(),
             address(this),
             prizeTokenId
         );
-
+        /// create a new lottery
         uint256 lotteryId = _totalLotteriesCreated;
-
-        /// Creating the lottery.
         _lotteryIdToLottery[lotteryId] = Lottery(
-            block.timestamp+duration,
-            lotteryId,
-            _msgSender(),
-            prizeContract,
-            prizeTokenId,
-            lotteryState.ACTIVE,
-            address(0),
-            0,
-            wonkaBarsMaxSupply,
-            wonkaBarPrice
+            block.timestamp+duration, /// expiration date
+            lotteryId, /// ID
+            _msgSender(), /// owner
+            prizeContract, /// prize contract
+            prizeTokenId, /// prize token ID
+            lotteryState.ACTIVE, /// state
+            address(0), /// winner
+            0, /// number of Wonka Bars sold
+            wonkaBarsMaxSupply, /// maximum number of Wonka Bars for sale
+            wonkaBarPrice /// price of a Wonka Bar
         );
-
-        /// manage after creating
+        /// update internal state
         _totalLotteriesCreated += 1;
         _lotteryOwnerToLotteryIds[_msgSender()].add(lotteryId);
         _activeLotteryIds.add(lotteryId);
-
+        /// return the ID of the new lottery
         return lotteryId;
     }
 
     /**
-     * Buys WonkaBars for a lottery.
+     * @notice Allows a user to buy a specified amount of Wonka Bars for a lottery. The caller must send the correct amount of Ether 
+     *         along with the transaction. A percentage of the total spending will be transferred to the MeltyFiDAO contract and the rest 
+     *         will be transferred to the owner of the lottery. The caller's balance of Wonka Bars for the specified lottery will also be 
+     *         updated.
      *
-     * @param lotteryId ID of the lottery.
-     * @param amount amount of Ether paid for the WonkaBars.
+     * @dev Raises error if the lottery is not active.
+     *      Raises error if after this purchease the total supply of WonkaBars will exceed the maximum supply allowed.
+     *      Raises error if the caller's balance of Wonka Bars for this lottery, after the purchase, will exceed the `_upperLimitBalanceOfPercentage`.
+     *      Raises error if the value sent is not enough to cover the cost of the Wonka Bars.
+     *
+     * @param lotteryId The ID of the lottery for which the Wonka Bars are being purchased.
+     * @param amount The number of Wonka Bars to be purchased.
      */
     function buyWonkaBars(
         uint256 lotteryId, 
         uint256 amount
     ) public payable
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// calculate the total spending for the Wonka Bars
         uint256 totalSpending = amount * lottery.wonkaBarPrice;
-
-        /// The lottery must be active.
+        /// The lottery must be active
         require(
             block.timestamp < lottery.expirationDate,
-            ""
+            "MeltyFiNFT: The lottery is not active"
         );
-        /// The total supply of WonkaBars must not exceed the maximum supply allowed.
+        /// After this purchease the total supply of WonkaBars must not exceed the maximum supply allowed.
         require(
             lottery.wonkaBarsSold + amount <= lottery.wonkaBarsMaxSupply,
-            ""
+            "MeltyFi: After this purchease the total supply of WonkaBars will exceed the maximum supply allowed"
         );
-        
+        /// The caller's balance of Wonka Bars for this lottery, after the purchase, must not exceed the _upperLimitBalanceOfPercentage
         require(
             (
                 ((balanceOf(_msgSender(), lotteryId) + amount + 1) * 100)
@@ -720,73 +737,95 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
             )
             <=
             _upperLimitBalanceOfPercentage,
-            ""
+            "MeltyFi: The caller's balance of Wonka Bars for this lottery, after the purchase, will exceed the _upperLimitBalanceOfPercentage"
         );
-        
+        /// The caller must sent anough amount of Ether to cover the cost of the Wonka Bars
         require(
             msg.value >= totalSpending, 
-            ""
+            "MeltyFiNFT: The value sent is not enough to cover the cost of the Wonka Bars"
         );
-
+        /// transfer _royaltyDAOPercentage of the total spending to the MeltyFiDAO contract
         uint256 valueToDAO = (totalSpending / 100) * _royaltyDAOPercentage;
         Address.sendValue(payable(_addressMeltyFiDAO()), valueToDAO);
-
+        /// transfer the rest of the total spending to the owner of the lottery
         uint256 valueToLotteryOwner = totalSpending - valueToDAO;
         Address.sendValue(payable(lottery.owner), valueToLotteryOwner);
-
+        /// mint the Wonka Bars for the caller
         _mint(_msgSender(), lotteryId, amount, "");
-        
+        /// update the total number of Wonka Bars sold for the lottery
         _lotteryIdToLottery[lotteryId].wonkaBarsSold += amount;
-
     }
 
-    function repayLoan(uint256 lotteryId) public payable {
-        
+    /**
+     * @notice Repays the loan for the given lotteryId. The caller of the function must be the owner of the lottery.
+     *
+     * @dev The function requires that the msg.value is greater than or equal to the total amount to be repaid, which is calculated 
+     *      by multiplying the number of wonka bars sold by the wonka bar price. The function also requires that the current block 
+     *      timestamp is before the expiration date of the lottery. If the total supply of the wonka bars for the given lottery id 
+     *      is 0 after repaying the loan, the state of the lottery is set to TRASHED, otherwise it is set to CANCELLED.
+     *
+     * @param lotteryId The id of the lottery to repay the loan for.
+     */
+    function repayLoan(
+        uint256 lotteryId
+    ) public payable 
+    {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// Calculate the total amount to be repaid
         uint256 totalPaying = _amountToRepay(lottery);
-
+        /// The caller must be the owner of the lottery
         require(
             lottery.owner == _msgSender(),
-            ""
+            "MeltyFi: The caller is not the owner of the lottery"
         );
-
+        /// The caller must sent anough amount of Ether to repay the loan
         require(
             msg.value >= totalPaying, 
-            ""
+            "MeltyFi: The value sent is not enough to repay the loan"
         );
-
+        /// The lottery must be active
         require(
-            block.timestamp < lottery.expirationDate, 
-            ""
+            block.timestamp < lottery.expirationDate,
+            "MeltyFiNFT: The lottery is not active"
         );
-
+        /// Mint Choco Chips to the owner of the lottery
         _contractChocoChip.mint(
             _msgSender(),
             totalPaying * _amountChocoChipPerEther
         );
-
+        /// Transfer the prize to the owner of the lottery
         lottery.prizeContract.safeTransferFrom(
             address(this),
             _msgSender(),
             lottery.prizeTokenId
         );
-        
-        /// manage after repaying
+        /// Remove the lottery from the active lotteries
         _activeLotteryIds.remove(lotteryId);
+        /// set the expiration date to the current block timestamp
         _lotteryIdToLottery[lotteryId].expirationDate = block.timestamp;
+        /// If the total supply of WonkaBars is 0, set the state to TRASHED, otherwise set it to CANCELLED
         if (totalSupply(lotteryId) == 0) {
             _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
         } else {
             _lotteryIdToLottery[lotteryId].state = lotteryState.CANCELLED;
         }
-
     }
 
-    function meltWonkaBars(uint256 lotteryId, uint256 amount) public {
-        
+    /**
+     * @notice Allows a user to melt their WonkaBars of a specific lottery and receive a refund in return.
+     *
+     * @param lotteryId The ID of the lottery from which the WonkaBars will be melted.
+     * @param amount The amount of WonkaBars to be melted.
+     */
+    function meltWonkaBars(
+        uint256 lotteryId, 
+        uint256 amount
+    ) public 
+    {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// calculate the total refound for the Wonka Bars
         uint256 totalRefunding = _amountToRefund(lottery, _msgSender());
 
         require(
@@ -838,17 +877,26 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
 
     }
 
+    /**
+     * @notice Draws the winner of a lottery.
+     *
+     * @dev Raises error if the lottery state is not active or the expiration date has not passed.
+     *      Raises error if the VRF request for random words is not fulfilled.
+     *
+     * @param lotteryId The ID of the lottery.
+     */
     function drawWinner(
         uint256 lotteryId
-    ) internal 
+    ) public 
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// The lottery state must be active and the expiration date must be passed
         require(
             lottery.state == lotteryState.ACTIVE
             &&
             lottery.expirationDate < block.timestamp,
-            ""
+            "MeltyFi: The lottery state is not active or the expiration date has not passed"
         );
         
         _activeLotteryIds.remove(lotteryId);
@@ -866,7 +914,10 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
             uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
             uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
             (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
-            require(fulfilled, "");
+            require(
+                fulfilled, 
+                "MeltyFi: The VRF request for random words is not fulfilled"
+            );
             uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
             uint256 totalizer = 0; 
             address winner;
@@ -885,22 +936,52 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         
     }
 
+    /**
+     * @notice Checks if any active lotteries need to be concluded.
+     *
+     * @dev This function is designed to be called by an external contract using
+     *      the `call` function. It is expected to be called periodically to check
+     *      if any active lotteries need to be concluded (e.g. because the expiration
+     *      date has passed).
+     *
+     * @param checkData Unused input data.
+     *
+     * @return upkeepNeeded Whether any lotteries need to be concluded.
+     * @return performData The ID of the lottery to be concluded, if any.
+     */
     function checkUpkeep(
-        bytes calldata /*checkData*/
+        bytes calldata checkData
     ) external view cannotExecute returns (bool upkeepNeeded, bytes memory performData) 
     {
         uint256 numberOfActiveLottery = _activeLotteryIds.length();
+        /// iterates through the set of active lotteries and checks the expiration date of each one
         for (uint256 i=0; i<numberOfActiveLottery; i++) {
             uint256 lotteryId = _activeLotteryIds.at(i);
-            if (_lotteryIdToLottery[lotteryId].expirationDate < block.timestamp) {
+            /// If it finds a lottery that has expired, it returns `true` and the ID of the lottery in `performData`
+            if (_lotteryIdToLottery[lotteryId].expirationDate <= block.timestamp) {
                 return (true, abi.encode(lotteryId));
             }
         }
+        /// If it does not find any expired lotteries, it returns `false` and an empty string in `performData`
         return (false, "");
     }
 
-    function performUpkeep(bytes calldata performData) external {
+    /**
+     * @notice Concludes an active lottery.
+     *
+     * @dev This function is intended to be called by an external contract in response to the `checkUpkeep`
+     *      function returning `true`. It decodes the `performData` input to retrieve the ID of the lottery
+     *      to be concluded and calls the `drawWinner` function to draw the winner and update the state of the
+     *      lottery.
+     *
+     * @param performData The ID of the lottery to be concluded.
+     */
+    function performUpkeep(
+        bytes calldata performData
+    ) external 
+    {
         uint256 lotteryId = abi.decode(performData, (uint256));
+        /// call the drawWinner function to draw the winner and update the state of the lottery
         drawWinner(lotteryId);
     }
 
