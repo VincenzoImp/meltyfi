@@ -52,7 +52,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
 
     /// Struct for storing the information of a lottery
     struct Lottery {
-        /// Expiration date of the lottery
+        /// Expiration date of the lottery, in seconds
         uint256 expirationDate;
         /// ID of the lottery
         uint256 id;
@@ -91,16 +91,16 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     VRFv2Consumer internal immutable _contractVRFv2Consumer;
 
     /// Amount of ChocoChips per Ether
-    uint256 internal immutable _amountChocoChipPerEther;
+    uint256 public immutable _amountChocoChipPerEther;
     /// Percentage of royalties to be paid to the MeltyFiDAO
-    uint256 internal immutable _royaltyDAOPercentage;
+    uint256 public immutable _royaltyDAOPercentage;
     /// Upper limit wonkabar balance percentage for a single address for a single lottery
-    uint256 internal immutable _upperLimitBalanceOfPercentage;
+    uint256 public immutable _upperLimitBalanceOfPercentage;
     /// Upper limit wonkabar supply for a single lottery
-    uint256 internal immutable _upperLimitMaxSupply;
+    uint256 public immutable _upperLimitMaxSupply;
 
     /// Total number of lotteries created.
-    uint256 internal _totalLotteriesCreated;
+    uint256 public _totalLotteriesCreated;
 
     /// maps a unique lottery ID to a "Lottery" object containing information about the lottery itself
     mapping(
@@ -490,7 +490,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         uint256 lotteryId
     ) public view returns (uint256) 
     {
-        /// return the expiration date of the lottery with the given ID
+        /// return the expiration date (in seconds) of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].expirationDate;
     }
 
@@ -595,7 +595,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         uint256 lotteryId
     ) public view returns (uint256) 
     {
-        /// return the maximum number of Wonka Bars for sale in the lottery with the given ID
+        /// return the maximum number of Wonka Bars that can be sold in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarsMaxSupply;
     }
 
@@ -638,7 +638,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      * @param prizeContract The contract that holds the prize for this lottery.
      * @param prizeTokenId The token ID of the prize for this lottery.
      * @param wonkaBarPrice The price of a Wonka Bar in this lottery.
-     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars for sale in this lottery.
+     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars that can be sold in this lottery.
      *
      * @return The ID of the new lottery.
      */
