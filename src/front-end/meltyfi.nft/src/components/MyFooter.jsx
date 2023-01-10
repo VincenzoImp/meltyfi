@@ -1,6 +1,6 @@
 import {Col, Container, Row} from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
-import ABI from "../contracts/nft.json";
+import ABI from "../contracts/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 
 function getLink(address) {
