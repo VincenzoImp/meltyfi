@@ -2,6 +2,7 @@ import {Col, Container, Row} from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 import ABI from "../contracts/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
+import {addressMeltyFiNFT} from "../App";
 
 function getLink(address) {
     return `https://goerli.etherscan.io/address/${address}`;
@@ -9,12 +10,11 @@ function getLink(address) {
 
 async function getLinks() {
     const sdk = new ThirdwebSDK("goerli");
-    const meltyfiAddress = "0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A";
-    const meltyfi = await sdk.getContract(meltyfiAddress, ABI);
+    const meltyfi = await sdk.getContract(addressMeltyFiNFT, ABI);
     const logoCollection = await meltyfi.call("addressLogoCollection");
     const chocoChip = await meltyfi.call("addressChocoChip");
     const meltyfiDAO = await meltyfi.call("addressMeltyFiDAO");
-    return [meltyfiAddress, logoCollection, chocoChip, meltyfiDAO];
+    return [addressMeltyFiNFT, logoCollection, chocoChip, meltyfiDAO];
 }
 
 function MyFooter() {
