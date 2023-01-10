@@ -1,7 +1,8 @@
 import {Col, Container, Row} from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 import {useAddress} from "@thirdweb-dev/react";
-import ABI from "../contracts/nft.json";
+import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
+import ChocoChip from "../contracts/ChocoChip.json";
 import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
 
@@ -30,8 +31,15 @@ async function loadMetadata(sdk, meltyfi, lottery) {
     return {lottery, name: metadata.name, image: metadata.image, owner};
 }
 
+async function getChocoChips(sdk, meltyfi, address) {
+    const chocoChip = await sdk.getContract(await meltyfi.call("addressChocoChip"), ChocoChip);
+    return await chocoChip.call("balanceOf", address);
+}
+
 async function loadProfileData(sdk, address) {
-    const meltyfi = await sdk.getContract("0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A", ABI);
+    if (address === undefined)
+        return [[], [], [], 0]
+    const meltyfi = await sdk.getContract("0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A", MeltyFiNFT);
     let [lotteries, owned, applied] = await loadLotteries(meltyfi, address);
     let fetched = {};
     const ownedMetadata = new Array(0);
@@ -54,17 +62,22 @@ async function loadProfileData(sdk, address) {
             appliedMetadata.push(fetched[lottery]);
         }
     }
-    return [lotteries, ownedMetadata, appliedMetadata];
+    const chocoChips = Number(await getChocoChips(sdk, meltyfi, address));
+    return [lotteries, ownedMetadata, appliedMetadata, chocoChips];
 }
 
 function getCards(lotteries) {
+    let text = <p>testo html<br/>accapo</p>
     return lotteries.map((lottery) => {
         return <Col>
             {LotteryCard({
                 src: lottery.image,
                 name: lottery.name,
-                owner: lottery.owner,
-                lottery: lottery.lottery
+                text,
+                onClickFunction: () => {
+                    alert("ciao")
+                },
+                onClickText: "clicca qui"
             })}
         </Col>
     });
@@ -73,26 +86,32 @@ function getCards(lotteries) {
 function Profile() {
     const sdk = new ThirdwebSDK("goerli");
     const address = useAddress();
-    const [profileData, setProfileData] = useState(null);
+    const [profileData, setProfileData] = useState([[], [], [], 0]);
     useEffect(() => {
         loadProfileData(sdk, address).then(setProfileData)
     }, [address]);
-    const [_lotteries, owned, applied] = profileData || [[], [], []];
-    // console.log("lotteries", lotteries, typeof lotteries);
-    // console.log("owned", owned, typeof owned);
-    // console.log("applied", applied, typeof applied);
-    return (<Container>
+    const [_lotteries, owned, applied, chocoChips] = profileData;
+    let lotteriesSection;
+    if (address !== undefined) {
+        lotteriesSection = <Container>
+            <div>Your ChocoChip balance: {chocoChips}</div>
+            Owned:<br/>
+            <Container>
+                <Row>{getCards(owned)}</Row>
+            </Container>
+            Applied:<br/>
+            <Container>
+                <Row>{getCards(applied)}</Row>
+            </Container>
+        </Container>
+    } else {
+        lotteriesSection = <p>Connect your wallet to see your profile</p>
+    }
+    return <Container>
         <h1>Chi sono</h1>
         The standard Lorem Ipsum passage<br/>
-        Owned:<br/>
-        <Container>
-            <Row>{getCards(owned)}</Row>
-        </Container>
-        Applied:<br/>
-        <Container>
-            <Row>{getCards(applied)}</Row>
-        </Container>
-    </Container>);
+        {lotteriesSection}
+    </Container>;
 }
 
 export default Profile;
