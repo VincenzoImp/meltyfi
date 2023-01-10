@@ -1,52 +1,48 @@
 // SPDX-License-Identifier: MIT
 
-/**
- * MeltyFiNFT is the contract that run the protocol of the MeltyFi platform.
- * It manages the creation, cancellation and conclusion of lotteries, as well as the
- * sale and refund of WonkaBars for each lottery, and also reward good users with ChocoChips.
- * The contract allows users to create a lottery by choosing their NFT to put as lottery prize,
- * setting an expiration date and defining a price in Ether for each WonkaBar sold.
- * When a lottery is created, the contract will be able to mint a fixed amount of WonkaBars
- * (setted by lottery owner) for the lottery. These WonkaBars are sold to users interested
- * in participating in the lottery and money raised are sent to the lottery owner (less some fees).
- * Once the expiration date is reached, the contract selects a random WonkaBar
- * holder as the winner, who receives the prize NFT. Plus every wonkabar holder is rewarded
- * with ChocoCips. If the lottery is cancelled by the owner beafore the expiration date,
- * the contract refunds WonkaBars holders with Ether of the lottery owners. Plus every
- * wonkabar holder is rewarded with ChocoCips.
- * @author MeltyFi Team
- * @version 0.1.0
- */
-
 pragma solidity ^0.8.9;
 
-/// ChocoChip contract is the governance token of the MeltyFi protocol.
+/// ChocoChip.sol is the governance token of the MeltyFi protocol
 import "./ChocoChip.sol";
-/// LogoCollection contract is the meme token of the MeltyFi protocol.
+/// LogoCollection.sol is the meme token of the MeltyFi protocol
 import "./LogoCollection.sol";
-/// MeltyFiDAO contract is the governance contract of the MeltyFi protocol.
+/// MeltyFiDAO.sol is the governance contract of the MeltyFi protocol
 import "./MeltyFiDAO.sol";
-//
+/// VRFv2Consumer.sol is a contract that provides functionality for verifying proof of work
 import "./VRFv2Consumer.sol";
-/// IERC721 interface defines the required methods for an ERC721 contract.
+/// IERC721.sol is an interface that defines the required methods for an ERC721 contract
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
-///
+/// IERC721Receiver.sol is an interface that defines methods for receiving ERC721 tokens
 import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-///
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-///
+/// ERC1155Supply.sol is a contract that extends the ERC1155 contract and provides functionality for managing the supply of ERC1155 tokens
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-/// Address library provides utilities for working with addresses.
-import "@openzeppelin/contracts/utils/Address.sol"; 
-/// EnumerableSet library provides a data structure for storing and iterating over sets of values.
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
-///
+/// AutomationBase.sol is a contract that provides basic functionality for integration with Chainlink, a platform for creating connections between smart contracts and external services
 import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
-///
+/// AutomationCompatibleInterface.sol is an interface that defines the required methods for being compatible with the Chainlink platform and using its automation functionality
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+/// Address library provides utilities for working with addresses
+import "@openzeppelin/contracts/utils/Address.sol"; 
+/// EnumerableSet library provides a data structure for storing and iterating over sets of values
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
 
-contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
+/**
+ * @notice MeltyFiNFT is the contract that run the protocol of the MeltyFi platform.
+ *         It manages the creation, cancellation and conclusion of lotteries, as well as the
+ *         sale and refund of WonkaBars for each lottery, and also reward good users with ChocoChips.
+ *         The contract allows users to create a lottery by choosing their NFT to put as lottery prize,
+ *         setting an expiration date and defining a price in Ether for each WonkaBar sold.
+ *         When a lottery is created, the contract will be able to mint a fixed amount of WonkaBars
+ *         (setted by lottery owner) for the lottery. These WonkaBars are sold to users interested
+ *         in participating in the lottery and money raised are sent to the lottery owner (less some fees).
+ *         Once the expiration date is reached, the contract selects a random WonkaBar
+ *         holder as the winner, who receives the prize NFT. Plus every wonkabar holder is rewarded
+ *         with ChocoCips. If the lottery is cancelled by the owner beafore the expiration date,
+ *         the contract refunds WonkaBars holders with Ether of the lottery owners. Plus every
+ *         wonkabar holder is rewarded with ChocoCips.
+ */
+contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
 
+    /// Data type representing the possible states of a lottery
     enum lotteryState {
         ACTIVE,
         CANCELLED,
@@ -54,78 +50,88 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         TRASHED
     }
 
-    /// Using Address for address type.
-    using Address for address;
-    /// Using EnumerableSet for EnumerableSet.AddressSet type.
-    using EnumerableSet for EnumerableSet.AddressSet;
-    /// Using EnumerableSet for EnumerableSet.UintSet type.
-    using EnumerableSet for EnumerableSet.UintSet;
-
-    /// Instance of the ChocoChip contract.
-    ChocoChip internal immutable _contractChocoChip;
-    /// Instance of the LogoCollection contract.
-    LogoCollection internal immutable _contractLogoCollection;
-    /// Instance of the MeltyFiDAO contract.
-    MeltyFiDAO internal immutable _contractMeltyFiDAO;
-    ///
-    VRFv2Consumer internal immutable _contractVRFv2Consumer;
-
-    /// Amount of ChocoChips per Ether.
-    uint256 internal immutable _amountChocoChipPerEther;
-    /// Percentage of royalties to be paid to the MeltyFiDAO.
-    uint256 internal immutable _royaltyDAOPercentage;
-    /// Upper limit 
-    uint256 internal immutable _upperLimitBalanceOfPercentage;
-    /// Upper limit 
-    uint256 internal immutable _upperLimitMaxSupply;
-
-    /// Struct for storing the information of a lottery.
+    /// Struct for storing the information of a lottery
     struct Lottery {
-        /// Expiration date of the lottery.
+        /// Expiration date of the lottery
         uint256 expirationDate;
-        /// ID of the lottery.
+        /// ID of the lottery
         uint256 id;
-        /// Owner of the lottery.
+        /// Owner of the lottery
         address owner;
-        /// Prize NFT contract of the lottery.
+        /// Prize NFT contract of the lottery
         IERC721 prizeContract;
-        /// Prize NFT token ID of the lottery.
+        /// Prize NFT token ID of the lottery
         uint256 prizeTokenId;
-        /// State of the lottery.
+        /// State of the lottery
         lotteryState state;
-        /// Winner of the lottery.
+        /// Winner of the lottery
         address winner;
-        /// Number of WonkaBars sold for the lottery.
+        /// Number of WonkaBars sold for the lottery
         uint256 wonkaBarsSold;
-        /// Maximum supply of WonkaBars for the lottery.
+        /// Maximum supply of WonkaBars for the lottery
         uint256 wonkaBarsMaxSupply;
-        /// Price of each WonkaBar for the lottery, in ChocoChips
+        /// Price of each WonkaBar for the lottery, in wei
         uint256 wonkaBarPrice;
     }
+
+    /// Using Address for address type
+    using Address for address;
+    /// Using EnumerableSet for EnumerableSet.AddressSet type
+    using EnumerableSet for EnumerableSet.AddressSet;
+    /// Using EnumerableSet for EnumerableSet.UintSet type
+    using EnumerableSet for EnumerableSet.UintSet;
+
+    /// Instance of the ChocoChip contract
+    ChocoChip internal immutable _contractChocoChip;
+    /// Instance of the LogoCollection contract
+    LogoCollection internal immutable _contractLogoCollection;
+    /// Instance of the MeltyFiDAO contract
+    MeltyFiDAO internal immutable _contractMeltyFiDAO;
+    /// Instance of the VRFv2Consumer contract
+    VRFv2Consumer internal immutable _contractVRFv2Consumer;
+
+    /// Amount of ChocoChips per Ether
+    uint256 internal immutable _amountChocoChipPerEther;
+    /// Percentage of royalties to be paid to the MeltyFiDAO
+    uint256 internal immutable _royaltyDAOPercentage;
+    /// Upper limit wonkabar balance percentage for a single address for a single lottery
+    uint256 internal immutable _upperLimitBalanceOfPercentage;
+    /// Upper limit wonkabar supply for a single lottery
+    uint256 internal immutable _upperLimitMaxSupply;
 
     /// Total number of lotteries created.
     uint256 internal _totalLotteriesCreated;
 
+    /// maps a unique lottery ID to a "Lottery" object containing information about the lottery itself
     mapping(
         uint256 => Lottery
     ) internal _lotteryIdToLottery;
 
+    /// maps the address of a lottery owner to a set of lottery IDs that they own
     mapping(
         address => EnumerableSet.UintSet
     ) internal _lotteryOwnerToLotteryIds;
 
+    /// maps the address of a WonkaBar holder to a set of lottery IDs for which they have purchased a ticket
     mapping(
         address => EnumerableSet.UintSet
     ) internal _wonkaBarHolderToLotteryIds;
 
+    /// maps a lottery ID to a set of WonkaBar holder addresses that have purchased a ticket for that lottery
     mapping(
         uint256 => EnumerableSet.AddressSet
     ) internal _lotteryIdToWonkaBarHolders;
 
+    /// set that stores the IDs of all active lotteries
     EnumerableSet.UintSet internal _activeLotteryIds;
 
     /**
-     * Constructor of the MeltyFiNFT contract.
+     * @notice Creates a new instance of the MeltyFiNFT contract.
+     *
+     * @dev Raises error if the address of `contractChocoChip` is not equal to the token address of `contractMeltyFiDAO`.
+     *      Raises error if the owner of `contractChocoChip` is not the current message sender.
+     *      Raises error if the owner of `contractLogoCollection` is not the current message sender.
+     *      Raises error if the owner of `contractVRFv2Consumer` is not the current message sender.
      *
      * @param contractChocoChip instance of the ChocoChip contract.
      * @param contractLogoCollection instance of the LogoCollection contract.
@@ -138,33 +144,32 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         VRFv2Consumer contractVRFv2Consumer
     ) ERC1155("https://ipfs.io/ipfs/QmTiQsRBGcKyyipnRGVTu8dPfykM89QHn81KHX488cTtxa")
     {
-        /// The ChocoChip contract and the MeltyFiDAO token must be the same contract.
+        /// The ChocoChip contract and the MeltyFiDAO token must be the same contract
         require(
             address(contractChocoChip) == address(contractMeltyFiDAO.token()),
-            ""
+            "MeltyFiNFT: address of contractChocoChip is not equal to the token address of the contractMeltyFiDAO"
         );
         /// The caller must be the owner of the ChocoChip contract.
         require(
             contractChocoChip.owner() == _msgSender(), 
-            ""
+            "MeltyFiNFT: the owner of contractChocoChip is not the current message sender"
         );
         /// The caller must be the owner of the LogoCollection contract.
         require(
             contractLogoCollection.owner() == _msgSender(),
-            ""
+            "MeltyFiNFT: the owner of contractLogoCollection is not the current message sender"
         );
         /// The caller must be the owner of the VRFv2Consumer contract.
         require(
             contractVRFv2Consumer.owner() == _msgSender(), 
-            ""
+            "MeltyFiNFT: the owner of contractVRFv2Consumer is not the current message sender"
         );
 
-        /// Initializing the instance variables.
+        /// Initializing the immutable variables
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
         _contractMeltyFiDAO = contractMeltyFiDAO;
         _contractVRFv2Consumer = contractVRFv2Consumer;
-
         _amountChocoChipPerEther = 1000;
         _royaltyDAOPercentage = 5;
         _upperLimitBalanceOfPercentage = 25;
@@ -172,18 +177,50 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         _totalLotteriesCreated = 0;
     }
 
-    receive() external payable virtual {
+    /**
+     * @notice Handles incoming ether payments.
+     *
+     * @dev This function is required for contracts that want to receive ether. 
+     *      It is called automatically whenever ether is sent to the contract.
+     */
+    receive() external payable {
     }
 
+    /**
+     * @notice A function that is called when an ERC721 token is received by this contract.
+     *
+     * @param operator The address of the operator that is transferring the token.
+     * @param from The address of the token owner.
+     * @param tokenId The identifier of the token being transferred.
+     * @param data Additional data associated with the token transfer.
+     *
+     * @return The four-byte selector of the `onERC721Received` function.
+     */
     function onERC721Received(
-        address /*operator*/,
-        address /*from*/,
-        uint256 /*tokenId*/,
-        bytes calldata /*data*/
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
     ) external pure returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
     }
 
+    /**
+     * @notice An internal function that is called before a token transfer occurs.
+     *
+     * @dev This function is called by the `transfer()` and `safeTransfer()` functions
+     *      of the `ERC1155Supply` contract to perform any necessary pre-transfer
+     *      logic. It is marked as `internal` and `override` to ensure that it can
+     *      only be called from within the contract and that it can be overridden
+     *      by derived contracts.
+     *
+     * @param operator The address of the operator that is transferring the tokens.
+     * @param from The address of the token owner.
+     * @param to The address of the recipient of the tokens.
+     * @param ids An array of token identifiers.
+     * @param amounts An array of token amounts.
+     * @param data Additional data associated with the token transfer.
+     */
     function _beforeTokenTransfer(
         address operator,
         address from,
@@ -191,17 +228,35 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) internal override(ERC1155, ERC1155Supply) 
+    ) internal override(ERC1155Supply)
     {
+        /// update _wonkaBarHolderToLotteryIds and _lotteryIdToWonkaBarHolders
         for (uint256 i=0; i<ids.length; i++) {
             if (amounts[i] != 0 && to != address(0)) {
                 _wonkaBarHolderToLotteryIds[to].add(ids[i]);
                 _lotteryIdToWonkaBarHolders[ids[i]].add(to);
             }
         }
+        /// call the super function to perform any necessary pre-transfer logic
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
     }
 
+    /**
+     * @notice An internal function that is called after a token transfer occurs.
+     *
+     * @dev This function is called by the `transfer()` and `safeTransfer()` functions
+     *      of the `ERC1155` contract to perform any necessary post-transfer logic.
+     *      It is marked as `internal` and `override` to ensure that it can only be
+     *      called from within the contract and that it can be overridden by derived
+     *      contracts.
+     *
+     * @param operator The address of the operator that transferred the tokens.
+     * @param from The address of the token owner.
+     * @param to The address of the recipient of the tokens.
+     * @param ids An array of token identifiers.
+     * @param amounts An array of token amounts.
+     * @param data Additional data associated with the token transfer.
+     */
     function _afterTokenTransfer (
         address operator,
         address from,
@@ -211,208 +266,381 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         bytes memory data
     ) internal override(ERC1155) 
     {
+        /// update _wonkaBarHolderToLotteryIds and _lotteryIdToWonkaBarHolders
         for (uint256 i=0; i<ids.length; i++) {
             if (from != address(0) && balanceOf(from, ids[i]) == 0) {
                 _wonkaBarHolderToLotteryIds[from].remove(ids[i]);
                 _lotteryIdToWonkaBarHolders[ids[i]].remove(from);
             }
         }
+        /// call the super function to perform any necessary post-transfer logic
         super._afterTokenTransfer (operator, from, to, ids, amounts, data);
     }
 
-    function activeLotteryIds() public view returns(uint256[] memory ){
+    /**
+     * @notice Returns an array of the IDs of all active lotteries.
+     *
+     * @dev An active lottery is one that has not yet been cancelled or colcluded
+     *      and is still selling tickets. This function returns an array of the 
+     *      IDs of all such lotteries.
+     *
+     * @return An array of the IDs of all active lotteries.
+     */
+    function activeLotteryIds() public view returns(uint256[] memory )
+    {
+        // return the values of _activeLotteryIds
         return _activeLotteryIds.values();
     }
 
-    function holderInLotteryIds(address holder) public view returns(uint256[] memory ){
+    /**
+     * @notice Returns an array of the IDs of all lotteries owned by a given address.
+     *
+     * @param owner The address of the lottery owner.
+     *
+     * @return An array of the IDs of all lotteries owned by the given address.
+     */
+    function ownedLotteryIds(
+        address owner
+    ) public view returns(uint256[] memory )
+    {
+        /// return the values of _lotteryOwnerToLotteryIds[owner]
+        return _lotteryOwnerToLotteryIds[owner].values();
+    }
+
+    /**
+     * @notice Returns an array of the IDs of all lotteries in which a given address holds WonkaBars.
+     *
+     * @param holder The address of the WonkaBar holder.
+     *
+     * @return An array of the IDs of all lotteries in which the given address holds WonkaBars.
+     */
+    function holderInLotteryIds(
+        address holder
+    ) public view returns(uint256[] memory )
+    {
+        /// return the values of _wonkaBarHolderToLotteryIds[holder]
         return _wonkaBarHolderToLotteryIds[holder].values();
     }
 
-
     /**
-     * Returns the address of the ChocoChip contract.
+     * @dev An internal function that returns the address of the ChocoChip contract.
      *
-     * @return address of the ChocoChip contract.
+     * @return The address of the ChocoChip contract.
      */
     function _addressChocoChip() internal view returns (address) 
     {
+        /// return the address of the ChocoChip contract
         return address(_contractChocoChip);
     }
 
     /**
-     * Returns the address of the LogoCollection contract.
+     * @dev An internal function that returns the address of the LogoCollection contract.
      *
-     * @return address of the LogoCollection contract.
+     * @return The address of the LogoCollection contract.
      */
     function _addressLogoCollection() internal view returns (address) 
     {
+        /// return the address of the LogoCollection contract
         return address(_contractLogoCollection);
     }
 
     /**
-     * Returns the address of the MeltyFiDAO contract.
+     * @dev An internal function that returns the address of the MeltyFiDAO contract.
      *
-     * @return address of the MeltyFiDAO contract.
+     * @return The address of the MeltyFiDAO contract.
      */
     function _addressMeltyFiDAO() internal view returns (address) 
     {
+        /// return the address of the MeltyFiDAO contract
         return address(_contractMeltyFiDAO);
     }
 
     /**
-     * Calculates the amount to be refunded to a user when a lottery is cancelled or has no WonkaBars sold.
-     * The amount is equal to the number of ChocoChips the user paid for the WonkaBars minus the royalties to be paid to the MeltyFiDAO.
+     * @dev An internal function that calculates the amount to refund to a given address for a given lottery.
+     *      This function is called only if the lottery is cancelled. 
      *
-     * @param lottery information of the lottery.
-     * @param addressToRefund address of the user to be refunded.
-     * @return amount to be refunded.
+     * @param lottery The lottery for which to calculate the refund amount.
+     * @param addressToRefund The address to which the refund will be made.
+     *
+     * @return The amount to refund to the given address for the given lottery.
      */
     function _amountToRefund(
         Lottery memory lottery, 
         address addressToRefund
     ) internal view returns (uint256)
     {
+        /// return the WonkaBar balance of the address in the given lottery multiplied by the price of WonkaBars in the lottery
         return balanceOf(addressToRefund, lottery.id) * lottery.wonkaBarPrice;
     }
 
     /**
-     * Calculates the amount to be repaid to a user when a lottery is cancelled or has no WonkaBars sold.
-     * The amount is equal to the number of WonkaBars the user bought multiplied by the price of each WonkaBar.
+     * @dev An internal function that calculates the amount to repay for a given lottery.
+     *      This function is called only if the lottery is active. 
      *
-     * @param lottery information of the lottery.
-     * @return amount to be repaid.
+     * @param lottery The lottery for which to calculate the amount to repay.
+     *
+     * @return The amount to repay for the given lottery.
      */
     function _amountToRepay(
         Lottery memory lottery
     ) internal pure returns (uint256)  
     {
+        /// return the number of WonkaBars sold in the lottery multiplied by the price of WonkaBars in the lottery
         return lottery.wonkaBarsSold * lottery.wonkaBarPrice;
     }
 
+    /**
+     * @dev An internal function that mints a logo token to a given address.
+     *
+     * @param to The address to which the logo token will be minted.
+     */
     function _mintLogo(
         address to
     ) internal
     {
+        /// call the `mint()` function of the LogoCollection contract to mint a logo token to the given address
         _contractLogoCollection.mint(to, 0, 1, "");
     }   
 
+    /**
+     * @notice Returns the address of the ChocoChip contract.
+     *
+     * @return The address of the ChocoChip contract.
+     */
     function addressChocoChip() public view returns (address) 
     {
+        /// call the internal function to return the address of the ChocoChip contract
         return _addressChocoChip();
     }
 
+    /**
+     * @notice Returns the address of the LogoCollection contract.
+     *
+     * @return The address of the LogoCollection contract.
+     */
     function addressLogoCollection() public view returns (address) 
     {
+        /// call the internal function to return the address of the LogoCollection contract
         return _addressLogoCollection();
     }
 
+    /**
+     * @notice Returns the address of the MeltyFiDAO contract.
+     *
+     * @return The address of the MeltyFiDAO contract.
+     */
     function addressMeltyFiDAO() public view returns (address) 
     {
+        /// call the internal function to return the address of the MeltyFiDAO contract
         return _addressMeltyFiDAO();
     }
 
+    /**
+     * @notice Returns the amount to refund to a given address for a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to calculate the refund amount.
+     * @param addressToRefund The address to which the refund will be made.
+     *
+     * @return The amount to refund to the given address for the given lottery. Returns 0 if the lottery is not cancelled.
+     */
     function amountToRefund(
         uint256 lotteryId, 
         address addressToRefund
     ) public view returns (uint256)
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        /// if the lottery is not cancelled, return 0
         if (lottery.state != lotteryState.CANCELLED) {
             return 0;
         }
+        /// otherwise, return the amount to refund calculated by the internal function
         return _amountToRefund(lottery, addressToRefund);
     }
     
+    /**
+     * @notice Returns the amount to repay for a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to calculate the amount to repay.
+     *
+     * @return The amount to repay for the given lottery. Returns 0 if the lottery is not active.
+     */
     function amountToRepay(
         uint256 lotteryId
     ) public view returns (uint256)
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        /// if the lottery is not active, return 0
         if (lottery.state != lotteryState.ACTIVE) {
             return 0;
         }
+        /// otherwise, return the amount to repay calculated by the internal function
         return _amountToRepay(lottery);
     }
 
+    /**
+     * @notice Returns the expiration date of a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the expiration date.
+     *
+     * @return The expiration date of the given lottery.
+     */
     function getLotteryExpirationDate(
         uint256 lotteryId
     ) public view returns (uint256) 
     {
+        /// return the expiration date of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].expirationDate;
     }
 
+    /**
+     * @notice Returns the owner of a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the owner.
+     *
+     * @return The owner of the given lottery.
+     */
     function getLotteryOwner(
         uint256 lotteryId
     ) public view returns (address) 
     {
+        /// return the owner of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].owner;
     }
 
+    /**
+     * @notice Returns the address of the prize contract for a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the prize contract address.
+     *
+     * @return The address of the prize contract for the given lottery.
+     */
     function getLotteryPrizeContract(
         uint256 lotteryId
     ) public view returns (address) 
     {
+        /// return the address of the prize contract for the lottery with the given ID
         return address(_lotteryIdToLottery[lotteryId].prizeContract);
     }
 
+    /**
+     * @notice Returns the token ID of the prize for a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the prize token ID.
+     *
+     * @return The token ID of the prize for the given lottery.
+     */
     function getLotteryPrizeTokenId(
         uint256 lotteryId
     ) public view returns (uint256) 
     {
+        /// return the token ID of the prize for the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].prizeTokenId;
     }
 
+    /**
+     * @notice Returns the state of a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the state.
+     *
+     * @return The state of the given lottery.
+     */
     function getLotteryState(
         uint256 lotteryId
     ) public view returns (lotteryState) 
     {
+        /// return the state of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].state;
     }
 
+    /**
+     * @notice Returns the winner of a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the winner.
+     *
+     * @return The winner of the given lottery.
+     */
     function getWinner(
         uint256 lotteryId
     ) public view returns (address) 
     {
+        /// return the winner of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].winner;
     }
 
+    /**
+     * @notice Returns the number of Wonka Bars sold in a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the number of Wonka Bars sold.
+     *
+     * @return The number of Wonka Bars sold in the given lottery.
+     */
     function getLotteryWonkaBarsSold(
         uint256 lotteryId
     ) public view returns (uint256) 
     {
+        /// return the number of Wonka Bars sold in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarsSold;
     }
 
+    /**
+     * @notice Returns the maximum number of Wonka Bars for sale in a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the maximum number of Wonka Bars for sale.
+     *
+     * @return The maximum number of Wonka Bars for sale in the given lottery.
+     */
     function getLotteryWonkaBarsMaxSupply(
         uint256 lotteryId
     ) public view returns (uint256) 
     {
+        /// return the maximum number of Wonka Bars for sale in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarsMaxSupply;
     }
 
+    /**
+     * @notice Returns the price of a Wonka Bar in a given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve the price of a Wonka Bar.
+     *
+     * @return The price of a Wonka Bar in the given lottery.
+     */
     function getLotteryWonkaBarPrice(
         uint256 lotteryId
     ) public view returns (uint256) 
     {
+        /// return the price of a Wonka Bar in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarPrice;
     }
 
+    /**
+     * @notice Mints a logo token and sends it to the given address.
+     *
+     * @param to The address to which the logo token should be sent.
+     */
     function mintLogo(
         address to
     ) public 
     {
+        /// call the internal function to mint a logo token and send it to the given address
         _mintLogo(to);
     }
 
     /**
-     * Creates a new lottery.
+     * @notice Creates a new lottery.
      *
-     * @param duration expiration date of the lottery.
-     * @param prizeContract address of the prize NFT contract.
-     * @param prizeTokenId ID of the prize NFT token.
-     * @param wonkaBarPrice price of each WonkaBar, in ChocoChips.
-     * @param wonkaBarsMaxSupply maximum supply of WonkaBars for the lottery.
-     * @return lotteryId of the newly created lottery.
+     * @dev Raises error if the caller is not the owner of the prize.
+     *      Raises error if the maximum number of Wonka Bars for sale is greater that the upper bound.
+     *      Raises error if the maximum number of Wonka Bars for sale is lower than the lower bound.
+     *
+     * @param duration The duration of the lottery, in seconds.
+     * @param prizeContract The contract that holds the prize for this lottery.
+     * @param prizeTokenId The token ID of the prize for this lottery.
+     * @param wonkaBarPrice The price of a Wonka Bar in this lottery.
+     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars for sale in this lottery.
+     *
+     * @return The ID of the new lottery.
      */
     function createLottery(
         uint256 duration,
@@ -423,76 +651,84 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
     ) public returns (uint256) 
     {
         /*
+        /// The caller must be the owner of the prize
         require(
             prizeContract.ownerOf(prizeTokenId) == _msgSender(), 
-            ""
+            "MeltyFi: The caller is not the owner of the prize"
         );
         */
+        /// The maximum number of Wonka Bars for sale must not be greater than the upper bound
         require(
             wonkaBarsMaxSupply <= _upperLimitMaxSupply,
-            ""
+            "MeltyFi: The maximum number of Wonka Bars for sale is greater that the upper bound"
         );
+        /// The maximum number of Wonka Bars for sale must not be lower than the lower bound
         require(
             (wonkaBarsMaxSupply * _upperLimitBalanceOfPercentage) / 100 >= 1, 
-            ""
+            "MeltyFi: The maximum number of Wonka Bars for sale is lower than the lower bound"
         );
-        
+        /// transfer the prize to this contract
         prizeContract.safeTransferFrom(
             _msgSender(),
             address(this),
             prizeTokenId
         );
-
+        /// create a new lottery
         uint256 lotteryId = _totalLotteriesCreated;
-
-        /// Creating the lottery.
         _lotteryIdToLottery[lotteryId] = Lottery(
-            block.timestamp+duration,
-            lotteryId,
-            _msgSender(),
-            prizeContract,
-            prizeTokenId,
-            lotteryState.ACTIVE,
-            address(0),
-            0,
-            wonkaBarsMaxSupply,
-            wonkaBarPrice
+            block.timestamp+duration, /// expiration date
+            lotteryId, /// ID
+            _msgSender(), /// owner
+            prizeContract, /// prize contract
+            prizeTokenId, /// prize token ID
+            lotteryState.ACTIVE, /// state
+            address(0), /// winner
+            0, /// number of Wonka Bars sold
+            wonkaBarsMaxSupply, /// maximum number of Wonka Bars for sale
+            wonkaBarPrice /// price of a Wonka Bar
         );
-
-        /// manage after creating
+        /// update internal state
         _totalLotteriesCreated += 1;
         _lotteryOwnerToLotteryIds[_msgSender()].add(lotteryId);
         _activeLotteryIds.add(lotteryId);
-
+        /// return the ID of the new lottery
         return lotteryId;
     }
 
     /**
-     * Buys WonkaBars for a lottery.
+     * @notice Allows a user to buy a specified amount of Wonka Bars for a lottery. The caller must send the correct amount of Ether 
+     *         along with the transaction. A percentage of the total spending will be transferred to the MeltyFiDAO contract and the rest 
+     *         will be transferred to the owner of the lottery. The caller's balance of Wonka Bars for the specified lottery will also be 
+     *         updated.
      *
-     * @param lotteryId ID of the lottery.
-     * @param amount amount of Ether paid for the WonkaBars.
+     * @dev Raises error if the lottery is not active.
+     *      Raises error if after this purchease the total supply of WonkaBars will exceed the maximum supply allowed.
+     *      Raises error if the caller's balance of Wonka Bars for this lottery, after the purchase, will exceed the `_upperLimitBalanceOfPercentage`.
+     *      Raises error if the value sent is not enough to cover the cost of the Wonka Bars.
+     *
+     * @param lotteryId The ID of the lottery for which the Wonka Bars are being purchased.
+     * @param amount The number of Wonka Bars to be purchased.
      */
     function buyWonkaBars(
         uint256 lotteryId, 
         uint256 amount
     ) public payable
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// calculate the total spending for the Wonka Bars
         uint256 totalSpending = amount * lottery.wonkaBarPrice;
-
-        /// The lottery must be active.
+        /// The lottery must be active
         require(
             block.timestamp < lottery.expirationDate,
-            ""
+            "MeltyFiNFT: The lottery is not active"
         );
-        /// The total supply of WonkaBars must not exceed the maximum supply allowed.
+        /// After this purchease the total supply of WonkaBars must not exceed the maximum supply allowed.
         require(
             lottery.wonkaBarsSold + amount <= lottery.wonkaBarsMaxSupply,
-            ""
+            "MeltyFi: After this purchease the total supply of WonkaBars will exceed the maximum supply allowed"
         );
-        
+        /// The caller's balance of Wonka Bars for this lottery, after the purchase, must not exceed the _upperLimitBalanceOfPercentage
         require(
             (
                 ((balanceOf(_msgSender(), lotteryId) + amount + 1) * 100)
@@ -501,73 +737,95 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
             )
             <=
             _upperLimitBalanceOfPercentage,
-            ""
+            "MeltyFi: The caller's balance of Wonka Bars for this lottery, after the purchase, will exceed the _upperLimitBalanceOfPercentage"
         );
-        
+        /// The caller must sent anough amount of Ether to cover the cost of the Wonka Bars
         require(
             msg.value >= totalSpending, 
-            ""
+            "MeltyFiNFT: The value sent is not enough to cover the cost of the Wonka Bars"
         );
-
+        /// transfer _royaltyDAOPercentage of the total spending to the MeltyFiDAO contract
         uint256 valueToDAO = (totalSpending / 100) * _royaltyDAOPercentage;
         Address.sendValue(payable(_addressMeltyFiDAO()), valueToDAO);
-
+        /// transfer the rest of the total spending to the owner of the lottery
         uint256 valueToLotteryOwner = totalSpending - valueToDAO;
         Address.sendValue(payable(lottery.owner), valueToLotteryOwner);
-
+        /// mint the Wonka Bars for the caller
         _mint(_msgSender(), lotteryId, amount, "");
-        
+        /// update the total number of Wonka Bars sold for the lottery
         _lotteryIdToLottery[lotteryId].wonkaBarsSold += amount;
-
     }
 
-    function repayLoan(uint256 lotteryId) public payable {
-        
+    /**
+     * @notice Repays the loan for the given lotteryId. The caller of the function must be the owner of the lottery.
+     *
+     * @dev The function requires that the msg.value is greater than or equal to the total amount to be repaid, which is calculated 
+     *      by multiplying the number of wonka bars sold by the wonka bar price. The function also requires that the current block 
+     *      timestamp is before the expiration date of the lottery. If the total supply of the wonka bars for the given lottery id 
+     *      is 0 after repaying the loan, the state of the lottery is set to TRASHED, otherwise it is set to CANCELLED.
+     *
+     * @param lotteryId The id of the lottery to repay the loan for.
+     */
+    function repayLoan(
+        uint256 lotteryId
+    ) public payable 
+    {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// Calculate the total amount to be repaid
         uint256 totalPaying = _amountToRepay(lottery);
-
+        /// The caller must be the owner of the lottery
         require(
             lottery.owner == _msgSender(),
-            ""
+            "MeltyFi: The caller is not the owner of the lottery"
         );
-
+        /// The caller must sent anough amount of Ether to repay the loan
         require(
             msg.value >= totalPaying, 
-            ""
+            "MeltyFi: The value sent is not enough to repay the loan"
         );
-
+        /// The lottery must be active
         require(
-            block.timestamp < lottery.expirationDate, 
-            ""
+            block.timestamp < lottery.expirationDate,
+            "MeltyFiNFT: The lottery is not active"
         );
-
+        /// Mint Choco Chips to the owner of the lottery
         _contractChocoChip.mint(
             _msgSender(),
             totalPaying * _amountChocoChipPerEther
         );
-
+        /// Transfer the prize to the owner of the lottery
         lottery.prizeContract.safeTransferFrom(
             address(this),
             _msgSender(),
             lottery.prizeTokenId
         );
-        
-        /// manage after repaying
+        /// Remove the lottery from the active lotteries
         _activeLotteryIds.remove(lotteryId);
+        /// set the expiration date to the current block timestamp
         _lotteryIdToLottery[lotteryId].expirationDate = block.timestamp;
+        /// If the total supply of WonkaBars is 0, set the state to TRASHED, otherwise set it to CANCELLED
         if (totalSupply(lotteryId) == 0) {
             _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
         } else {
             _lotteryIdToLottery[lotteryId].state = lotteryState.CANCELLED;
         }
-
     }
 
-    function meltWonkaBars(uint256 lotteryId, uint256 amount) public {
-        
+    /**
+     * @notice Allows a user to melt their WonkaBars of a specific lottery and receive a refund in return.
+     *
+     * @param lotteryId The ID of the lottery from which the WonkaBars will be melted.
+     * @param amount The amount of WonkaBars to be melted.
+     */
+    function meltWonkaBars(
+        uint256 lotteryId, 
+        uint256 amount
+    ) public 
+    {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// calculate the total refound for the Wonka Bars
         uint256 totalRefunding = _amountToRefund(lottery, _msgSender());
 
         require(
@@ -619,17 +877,26 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
 
     }
 
+    /**
+     * @notice Draws the winner of a lottery.
+     *
+     * @dev Raises error if the lottery state is not active or the expiration date has not passed.
+     *      Raises error if the VRF request for random words is not fulfilled.
+     *
+     * @param lotteryId The ID of the lottery.
+     */
     function drawWinner(
         uint256 lotteryId
-    ) internal 
+    ) public 
     {
+        /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-
+        /// The lottery state must be active and the expiration date must be passed
         require(
             lottery.state == lotteryState.ACTIVE
             &&
             lottery.expirationDate < block.timestamp,
-            ""
+            "MeltyFi: The lottery state is not active or the expiration date has not passed"
         );
         
         _activeLotteryIds.remove(lotteryId);
@@ -647,7 +914,10 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
             uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
             uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
             (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
-            require(fulfilled, "");
+            require(
+                fulfilled, 
+                "MeltyFi: The VRF request for random words is not fulfilled"
+            );
             uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
             uint256 totalizer = 0; 
             address winner;
@@ -666,22 +936,52 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155, ERC1155Supply, AutomationBase, 
         
     }
 
+    /**
+     * @notice Checks if any active lotteries need to be concluded.
+     *
+     * @dev This function is designed to be called by an external contract using
+     *      the `call` function. It is expected to be called periodically to check
+     *      if any active lotteries need to be concluded (e.g. because the expiration
+     *      date has passed).
+     *
+     * @param checkData Unused input data.
+     *
+     * @return upkeepNeeded Whether any lotteries need to be concluded.
+     * @return performData The ID of the lottery to be concluded, if any.
+     */
     function checkUpkeep(
-        bytes calldata /*checkData*/
+        bytes calldata checkData
     ) external view cannotExecute returns (bool upkeepNeeded, bytes memory performData) 
     {
         uint256 numberOfActiveLottery = _activeLotteryIds.length();
+        /// iterates through the set of active lotteries and checks the expiration date of each one
         for (uint256 i=0; i<numberOfActiveLottery; i++) {
             uint256 lotteryId = _activeLotteryIds.at(i);
-            if (_lotteryIdToLottery[lotteryId].expirationDate < block.timestamp) {
+            /// If it finds a lottery that has expired, it returns `true` and the ID of the lottery in `performData`
+            if (_lotteryIdToLottery[lotteryId].expirationDate <= block.timestamp) {
                 return (true, abi.encode(lotteryId));
             }
         }
+        /// If it does not find any expired lotteries, it returns `false` and an empty string in `performData`
         return (false, "");
     }
 
-    function performUpkeep(bytes calldata performData) external {
+    /**
+     * @notice Concludes an active lottery.
+     *
+     * @dev This function is intended to be called by an external contract in response to the `checkUpkeep`
+     *      function returning `true`. It decodes the `performData` input to retrieve the ID of the lottery
+     *      to be concluded and calls the `drawWinner` function to draw the winner and update the state of the
+     *      lottery.
+     *
+     * @param performData The ID of the lottery to be concluded.
+     */
+    function performUpkeep(
+        bytes calldata performData
+    ) external 
+    {
         uint256 lotteryId = abi.decode(performData, (uint256));
+        /// call the drawWinner function to draw the winner and update the state of the lottery
         drawWinner(lotteryId);
     }
 
