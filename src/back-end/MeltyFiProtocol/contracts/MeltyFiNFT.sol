@@ -701,7 +701,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      *         will be transferred to the owner of the lottery. The caller's balance of Wonka Bars for the specified lottery will also be 
      *         updated.
      *
-     * @dev Raises error if the lottery is not active.
+     * @dev Raises error if the lottery is not really active.
      *      Raises error if after this purchease the total supply of WonkaBars will exceed the maximum supply allowed.
      *      Raises error if the caller's balance of Wonka Bars for this lottery, after the purchase, will exceed the `_upperLimitBalanceOfPercentage`.
      *      Raises error if the value sent is not enough to cover the cost of the Wonka Bars.
@@ -718,10 +718,10 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
         /// calculate the total spending for the Wonka Bars
         uint256 totalSpending = amount * lottery.wonkaBarPrice;
-        /// The lottery must be active
+        /// The lottery must be really active
         require(
             block.timestamp < lottery.expirationDate,
-            "MeltyFiNFT: The lottery is not active"
+            "MeltyFiNFT: The lottery is not really active"
         );
         /// After this purchease the total supply of WonkaBars must not exceed the maximum supply allowed.
         require(
@@ -759,10 +759,9 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     /**
      * @notice Repays the loan for the given lotteryId. The caller of the function must be the owner of the lottery.
      *
-     * @dev The function requires that the msg.value is greater than or equal to the total amount to be repaid, which is calculated 
-     *      by multiplying the number of wonka bars sold by the wonka bar price. The function also requires that the current block 
-     *      timestamp is before the expiration date of the lottery. If the total supply of the wonka bars for the given lottery id 
-     *      is 0 after repaying the loan, the state of the lottery is set to TRASHED, otherwise it is set to CANCELLED.
+     * @dev Raises error if the caller is not the owner of the lottery.
+     *      Raises error if the value sent is not enough to repay the loan.
+     *      Raises error if the lottery is not more active.
      *
      * @param lotteryId The id of the lottery to repay the loan for.
      */
@@ -787,7 +786,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         /// The lottery must be active
         require(
             block.timestamp < lottery.expirationDate,
-            "MeltyFiNFT: The lottery is not active"
+            "MeltyFiNFT: The lottery is not more active"
         );
         /// Mint Choco Chips to the owner of the lottery
         _contractChocoChip.mint(
@@ -813,7 +812,77 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     }
 
     /**
+     * @notice Draws the winner of a lottery.
+     *
+     * @dev Raises error if the lottery state is not active.
+     *      Raises error if the lottery expiration date is not passed.
+     *      Raises error if the VRF request for random words is not fulfilled.
+     *
+     * @param lotteryId The ID of the lottery.
+     */
+    function drawWinner(
+        uint256 lotteryId
+    ) public 
+    {
+        /// retrieve the lottery with the given ID
+        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
+        /// The lottery state must be active
+        require(
+            lottery.state == lotteryState.ACTIVE,
+            "MeltyFi: The lottery state is not active"
+        );
+        // The lottery expiration date must be passed
+        require(
+            block.timestamp >= lottery.expirationDate,
+            "MeltyFi: The lottery expiration date is not passed"
+        );
+        /// remove lottery from _activeLotteryIds
+        _activeLotteryIds.remove(lotteryId);
+        /// if there are no WonkaBar sold transfer prize to the owner, otherwise set lottery winner
+        uint256 numberOfWonkaBars = totalSupply(lotteryId);
+        if (numberOfWonkaBars == 0) {
+            /// transfer prize to the owner if no tokens were sold
+            lottery.prizeContract.safeTransferFrom(
+                address(this),
+                lottery.owner,
+                lottery.prizeTokenId
+            );
+            /// set lottery state to trashed
+            _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
+        } else {
+            /// set lottery winner
+            EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
+            uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
+            uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
+            (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
+            /// The VRF request for random words must be fulfilled
+            require(
+                fulfilled, 
+                "MeltyFi: The VRF request for random words is not fulfilled"
+            );
+            uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
+            uint256 totalizer = 0; 
+            address winner;
+            for (uint256 i=0; i<numberOfWonkaBarHolders; i++) {
+                address holder = wonkaBarHolders.at(i);
+                totalizer += balanceOf(holder, lotteryId);
+                if (winnerIndex <= totalizer) {
+                    winner = holder;
+                    break;
+                }
+            }
+            _lotteryIdToLottery[lotteryId].winner = winner;
+            _lotteryIdToLottery[lotteryId].state = lotteryState.CONCLUDED;
+        }
+    }
+
+    /**
      * @notice Allows a user to melt their WonkaBars of a specific lottery and receive a refund in return.
+     *
+     * @dev Raises error if the user does not have enough WonkaBar balance to melt the given amount.
+     *      Raises error if the lottery is trashed.
+     *      Raises error if lottery is really active.
+     *      Raises error if lottery is waiting to be concluded by the oracle.
      *
      * @param lotteryId The ID of the lottery from which the WonkaBars will be melted.
      * @param amount The amount of WonkaBars to be melted.
@@ -827,35 +896,36 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
         /// calculate the total refound for the Wonka Bars
         uint256 totalRefunding = _amountToRefund(lottery, _msgSender());
-
+        /// the user must have enough WonkaBar balance to melt the given amount
         require(
             balanceOf(_msgSender(), lotteryId) >= amount,
-            ""
+            "MeltyFi: The user does not have enough WonkaBar balance to melt the given amount"
         );
-
-        if (block.timestamp >= lottery.expirationDate) { //qui puo' essere conclusa o  trashed e non vogliamo che sia trashed
-            require(
-                totalSupply(lotteryId) > 0,
-                ""/// lotteria trashed
-            );
-        } else { //qui puo' essere attiva o cancellata e non vogliamo che sia attiva
-            require(
-                lottery.state == lotteryState.CANCELLED,
-                ""///lotteria attiva
-            );
+        /// the lottery must not be trashed
+        require(
+            lottery.state != lotteryState.TRASHED,
+            "MeltyFi: The lottery is trashed"
+        );
+        /// lottery must not be really active or waiting to be concluded by the oracle
+        if (lottery.state == lotteryState.ACTIVE) {
+            if (block.timestamp < lottery.expirationDate) {
+                revert("MeltyFi: The lottery is still active");
+            } else {
+                revert("MeltyFi: The lottery is waiting to be concluded by the oracle");
+            }
         }
-
+        /// Burn the Wonka Bars for the caller
         _burn(_msgSender(), lotteryId, amount);
-
+        /// Mint Choco Chips to the caller
         _contractChocoChip.mint(
             _msgSender(),
             totalRefunding * _amountChocoChipPerEther
         );
-
+        /// if lottery state is cancelled, also refound the caller
         if (lottery.state == lotteryState.CANCELLED) {
             Address.sendValue(payable(_msgSender()), totalRefunding);
         }
-
+        /// if the caller is the winner and he does not already receive the price
         if (
             lottery.state == lotteryState.CONCLUDED 
             && 
@@ -863,77 +933,17 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
             &&
             IERC721(lottery.prizeContract).ownerOf(lottery.prizeTokenId) == address(this)
         ) {
+            /// transfer prize to the caller (the winner)
             IERC721(lottery.prizeContract).safeTransferFrom(
                 address(this), 
                 _msgSender(), 
                 lottery.prizeTokenId
             );
         }
-        
-        /// manage after melting
+        /// if all lottery's WonkaBars are melted, trash the lottery
         if (totalSupply(lotteryId) == 0) {
             _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
         }
-
-    }
-
-    /**
-     * @notice Draws the winner of a lottery.
-     *
-     * @dev Raises error if the lottery state is not active or the expiration date has not passed.
-     *      Raises error if the VRF request for random words is not fulfilled.
-     *
-     * @param lotteryId The ID of the lottery.
-     */
-    function drawWinner(
-        uint256 lotteryId
-    ) public 
-    {
-        /// retrieve the lottery with the given ID
-        Lottery memory lottery = _lotteryIdToLottery[lotteryId];
-        /// The lottery state must be active and the expiration date must be passed
-        require(
-            lottery.state == lotteryState.ACTIVE
-            &&
-            lottery.expirationDate < block.timestamp,
-            "MeltyFi: The lottery state is not active or the expiration date has not passed"
-        );
-        
-        _activeLotteryIds.remove(lotteryId);
-        uint256 numberOfWonkaBars = totalSupply(lotteryId);
-
-        if (numberOfWonkaBars == 0) {
-            lottery.prizeContract.safeTransferFrom(
-                address(this),
-                lottery.owner,
-                lottery.prizeTokenId
-            );
-            _lotteryIdToLottery[lotteryId].state = lotteryState.TRASHED;
-        } else {
-            EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
-            uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
-            uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
-            (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
-            require(
-                fulfilled, 
-                "MeltyFi: The VRF request for random words is not fulfilled"
-            );
-            uint256 winnerIndex = (randomWords[0]%numberOfWonkaBars)+1;
-            uint256 totalizer = 0; 
-            address winner;
-            
-            for (uint256 i=0; i<numberOfWonkaBarHolders; i++) {
-                address holder = wonkaBarHolders.at(i);
-                totalizer += balanceOf(holder, lotteryId);
-                if (winnerIndex <= totalizer) {
-                    winner = holder;
-                    break;
-                }
-            }
-            _lotteryIdToLottery[lotteryId].winner = winner;
-            _lotteryIdToLottery[lotteryId].state = lotteryState.CONCLUDED;
-        }
-        
     }
 
     /**
@@ -984,13 +994,4 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         /// call the drawWinner function to draw the winner and update the state of the lottery
         drawWinner(lotteryId);
     }
-
-
 }
-
-/**
- * @dev
- * il lender riceve 1 choc pari al numero di finney spesi in ticket
- * il bowworare riceve 1 choc pari al numero di finney spesi in interessi
- *
- */
