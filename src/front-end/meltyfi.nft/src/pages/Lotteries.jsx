@@ -1,8 +1,60 @@
 import LotteryCard from '../components/lotteryCard.jsx';
 import { Container, Row, Col } from 'react-bootstrap';
+import {ThirdwebSDK} from "@thirdweb-dev/sdk";
+import {useAddress} from "@thirdweb-dev/react";
+import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
+import {useEffect, useState} from "react";
 
 
-function Lotteries() {
+function renderLotteries(lotteries) {
+    let text = <p>testo html<br/>accapo</p>
+    const buyWonkaBars = () => {alert("ciao")}
+    return lotteries.map((lottery) => {
+        return <Col>
+            {LotteryCard({
+                src: lottery.image,
+                name: lottery.name,
+                text,
+                onClickFunction: buyWonkaBars,
+                onClickText: "Buy Wonka Bars"
+            })}
+        </Col>
+    });
+}
+
+async function loadMetadata(sdk, meltyfi, lottery) {
+    lottery = parseInt(lottery);
+    const contract = await sdk.getContract(await meltyfi.call("getLotteryPrizeContract", lottery), "nft-collection");
+    const token = await meltyfi.call("getLotteryPrizeTokenId", lottery);
+    const metadata = (await contract.get(token)).metadata;
+    const owner = await meltyfi.call("getLotteryOwner", lottery);
+    return {lottery, name: metadata.name, image: metadata.image, owner};
+}
+
+async function getLotteryInfo(sdk, addressMeltyFiNFT){
+    const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
+
+    const lotteries = await meltyfi.call("activeLotteryIds");
+
+    const lottery = lotteries[0];
+
+    const expiration = await meltyfi.call("getLotteryExpirationDate", lottery);
+
+    const wonkaBarPrice = await meltyfi.call("getLotteryWonkaBarPrice", lottery);
+
+    const wonkaBarMaxSupply = await meltyfi.call("getLotteryWonkaBarMaxSupply", lottery);
+    const wonkaBarSold = await meltyfi.call("getLotteryWonkaBarsSold", lottery);
+    const remainingWonkaBar = wonkaBarMaxSupply - wonkaBarSold;
+
+    const metaData = loadMetadata(sdk, meltyfi, lottery);
+
+}
+
+
+function Lotteries(props) {
+    const sdk = new ThirdwebSDK("goerli");
+    getLotteryInfo(sdk, props.addressMeltyFiNFT);
+
     return (
         <Container>
             <Row>
