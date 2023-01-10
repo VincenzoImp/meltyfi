@@ -52,7 +52,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
 
     /// Struct for storing the information of a lottery
     struct Lottery {
-        /// Expiration date of the lottery
+        /// Expiration date of the lottery, in seconds
         uint256 expirationDate;
         /// ID of the lottery
         uint256 id;
@@ -164,7 +164,6 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
             contractVRFv2Consumer.owner() == _msgSender(), 
             "MeltyFiNFT: the owner of contractVRFv2Consumer is not the current message sender"
         );
-
         /// Initializing the immutable variables
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
@@ -278,51 +277,6 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     }
 
     /**
-     * @notice Returns an array of the IDs of all active lotteries.
-     *
-     * @dev An active lottery is one that has not yet been cancelled or colcluded
-     *      and is still selling tickets. This function returns an array of the 
-     *      IDs of all such lotteries.
-     *
-     * @return An array of the IDs of all active lotteries.
-     */
-    function activeLotteryIds() public view returns(uint256[] memory )
-    {
-        // return the values of _activeLotteryIds
-        return _activeLotteryIds.values();
-    }
-
-    /**
-     * @notice Returns an array of the IDs of all lotteries owned by a given address.
-     *
-     * @param owner The address of the lottery owner.
-     *
-     * @return An array of the IDs of all lotteries owned by the given address.
-     */
-    function ownedLotteryIds(
-        address owner
-    ) public view returns(uint256[] memory )
-    {
-        /// return the values of _lotteryOwnerToLotteryIds[owner]
-        return _lotteryOwnerToLotteryIds[owner].values();
-    }
-
-    /**
-     * @notice Returns an array of the IDs of all lotteries in which a given address holds WonkaBars.
-     *
-     * @param holder The address of the WonkaBar holder.
-     *
-     * @return An array of the IDs of all lotteries in which the given address holds WonkaBars.
-     */
-    function holderInLotteryIds(
-        address holder
-    ) public view returns(uint256[] memory )
-    {
-        /// return the values of _wonkaBarHolderToLotteryIds[holder]
-        return _wonkaBarHolderToLotteryIds[holder].values();
-    }
-
-    /**
      * @dev An internal function that returns the address of the ChocoChip contract.
      *
      * @return The address of the ChocoChip contract.
@@ -403,11 +357,26 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     }   
 
     /**
+     * @notice Returns an array of the IDs of all active lotteries.
+     *
+     * @dev An active lottery is one that has not yet been cancelled or colcluded
+     *      and is still selling tickets. This function returns an array of the 
+     *      IDs of all such lotteries.
+     *
+     * @return An array of the IDs of all active lotteries.
+     */
+    function activeLotteryIds() external view returns(uint256[] memory )
+    {
+        // return the values of _activeLotteryIds
+        return _activeLotteryIds.values();
+    }
+    
+    /**
      * @notice Returns the address of the ChocoChip contract.
      *
      * @return The address of the ChocoChip contract.
      */
-    function addressChocoChip() public view returns (address) 
+    function addressChocoChip() external view returns (address) 
     {
         /// call the internal function to return the address of the ChocoChip contract
         return _addressChocoChip();
@@ -418,7 +387,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      *
      * @return The address of the LogoCollection contract.
      */
-    function addressLogoCollection() public view returns (address) 
+    function addressLogoCollection() external view returns (address) 
     {
         /// call the internal function to return the address of the LogoCollection contract
         return _addressLogoCollection();
@@ -429,7 +398,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      *
      * @return The address of the MeltyFiDAO contract.
      */
-    function addressMeltyFiDAO() public view returns (address) 
+    function addressMeltyFiDAO() external view returns (address) 
     {
         /// call the internal function to return the address of the MeltyFiDAO contract
         return _addressMeltyFiDAO();
@@ -446,7 +415,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     function amountToRefund(
         uint256 lotteryId, 
         address addressToRefund
-    ) public view returns (uint256)
+    ) external view returns (uint256)
     {
         /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
@@ -467,7 +436,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function amountToRepay(
         uint256 lotteryId
-    ) public view returns (uint256)
+    ) external view returns (uint256)
     {
         /// retrieve the lottery with the given ID
         Lottery memory lottery = _lotteryIdToLottery[lotteryId];
@@ -480,6 +449,17 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
     }
 
     /**
+     * @notice Returns the amount of ChocoChips per Ether.
+     *
+     * @return The amount of ChocoChips per Ether.
+     */
+    function getAmountChocoChipPerEther() external view returns(uint256) 
+    {
+        /// return amount of ChocoChips per Ether
+        return _amountChocoChipPerEther;
+    }
+    
+    /**
      * @notice Returns the expiration date of a given lottery.
      *
      * @param lotteryId The ID of the lottery for which to retrieve the expiration date.
@@ -488,9 +468,9 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryExpirationDate(
         uint256 lotteryId
-    ) public view returns (uint256) 
+    ) external view returns (uint256) 
     {
-        /// return the expiration date of the lottery with the given ID
+        /// return the expiration date (in seconds) of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].expirationDate;
     }
 
@@ -503,7 +483,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryOwner(
         uint256 lotteryId
-    ) public view returns (address) 
+    ) external view returns (address) 
     {
         /// return the owner of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].owner;
@@ -518,7 +498,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryPrizeContract(
         uint256 lotteryId
-    ) public view returns (address) 
+    ) external view returns (address) 
     {
         /// return the address of the prize contract for the lottery with the given ID
         return address(_lotteryIdToLottery[lotteryId].prizeContract);
@@ -533,7 +513,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryPrizeTokenId(
         uint256 lotteryId
-    ) public view returns (uint256) 
+    ) external view returns (uint256) 
     {
         /// return the token ID of the prize for the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].prizeTokenId;
@@ -548,7 +528,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryState(
         uint256 lotteryId
-    ) public view returns (lotteryState) 
+    ) external view returns (lotteryState) 
     {
         /// return the state of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].state;
@@ -563,7 +543,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getWinner(
         uint256 lotteryId
-    ) public view returns (address) 
+    ) external view returns (address) 
     {
         /// return the winner of the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].winner;
@@ -578,7 +558,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryWonkaBarsSold(
         uint256 lotteryId
-    ) public view returns (uint256) 
+    ) external view returns (uint256) 
     {
         /// return the number of Wonka Bars sold in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarsSold;
@@ -593,9 +573,9 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryWonkaBarsMaxSupply(
         uint256 lotteryId
-    ) public view returns (uint256) 
+    ) external view returns (uint256) 
     {
-        /// return the maximum number of Wonka Bars for sale in the lottery with the given ID
+        /// return the maximum number of Wonka Bars that can be sold in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarsMaxSupply;
     }
 
@@ -608,10 +588,69 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function getLotteryWonkaBarPrice(
         uint256 lotteryId
-    ) public view returns (uint256) 
+    ) external view returns (uint256) 
     {
         /// return the price of a Wonka Bar in the lottery with the given ID
         return _lotteryIdToLottery[lotteryId].wonkaBarPrice;
+    }
+
+    /**
+     * @notice Returns the percentage of royalties to be paid to the MeltyFiDAO.
+     *
+     * @return The percentage of royalties to be paid to the MeltyFiDAO.
+     */
+    function getRoyaltyDAOPercentage() external view returns(uint256)
+    {
+        /// return the percentage of royalties to be paid to the MeltyFiDAO
+        return _royaltyDAOPercentage;
+    }
+
+    /**
+     * @notice Returns the total number of lotteries created.
+     *
+     * @return The total number of lotteries created.
+     */
+    function getTotalLotteriesCreated() external view returns(uint256)
+    {
+        /// return the total number of lotteries created
+        return _totalLotteriesCreated;
+    }
+
+    /**
+     * @notice Returns the upper limit wonkabar balance percentage for a single address for a single lottery.
+     *
+     * @return The upper limit wonkabar balance percentage for a single address for a single lottery.
+     */
+    function getUpperLimitBalanceOfPercentage() external view returns(uint256)
+    {
+        /// return the upper limit wonkabar balance percentage for a single address for a single lottery
+        return _upperLimitBalanceOfPercentage;
+    }
+
+    /**
+     * @notice Returns the upper limit wonkabar supply for a single lottery.
+     *
+     * @return The upper limit wonkabar supply for a single lottery.
+     */
+    function getUpperLimitMaxSupply() external view returns(uint256)
+    {
+        /// return the upper limit wonkabar supply for a single lottery
+        return _upperLimitMaxSupply;
+    }
+
+    /**
+     * @notice Returns an array of the IDs of all lotteries in which a given address holds WonkaBars.
+     *
+     * @param holder The address of the WonkaBar holder.
+     *
+     * @return An array of the IDs of all lotteries in which the given address holds WonkaBars.
+     */
+    function holderInLotteryIds(
+        address holder
+    ) external view returns(uint256[] memory )
+    {
+        /// return the values of _wonkaBarHolderToLotteryIds[holder]
+        return _wonkaBarHolderToLotteryIds[holder].values();
     }
 
     /**
@@ -621,10 +660,25 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      */
     function mintLogo(
         address to
-    ) public 
+    ) external 
     {
         /// call the internal function to mint a logo token and send it to the given address
         _mintLogo(to);
+    }
+
+    /**
+     * @notice Returns an array of the IDs of all lotteries owned by a given address.
+     *
+     * @param owner The address of the lottery owner.
+     *
+     * @return An array of the IDs of all lotteries owned by the given address.
+     */
+    function ownedLotteryIds(
+        address owner
+    ) external view returns(uint256[] memory )
+    {
+        /// return the values of _lotteryOwnerToLotteryIds[owner]
+        return _lotteryOwnerToLotteryIds[owner].values();
     }
 
     /**
@@ -638,7 +692,7 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
      * @param prizeContract The contract that holds the prize for this lottery.
      * @param prizeTokenId The token ID of the prize for this lottery.
      * @param wonkaBarPrice The price of a Wonka Bar in this lottery.
-     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars for sale in this lottery.
+     * @param wonkaBarsMaxSupply The maximum number of Wonka Bars that can be sold in this lottery.
      *
      * @return The ID of the new lottery.
      */
