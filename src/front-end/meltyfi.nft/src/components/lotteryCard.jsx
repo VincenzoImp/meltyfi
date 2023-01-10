@@ -13,9 +13,7 @@ function LotteryCard({src, name, text, onClickFunction, onClickText}) {
                 <Card.Title className='CardTitle'>
                     {name}
                 </Card.Title>
-                <Card.Text className='CardText'>
-                    {text}
-                </Card.Text>
+                {text}
                 {button}
             </Card.Body>
         </Card>
