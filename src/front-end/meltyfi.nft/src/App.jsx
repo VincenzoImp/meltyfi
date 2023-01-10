@@ -1,12 +1,12 @@
 import './styles/App.css';
 import Bootstrap from './bootstrap';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import MyNavbar from './components/MyNavbar';
 import Home from './pages/Home';
 import Lotteries from './pages/Lotteries';
 import Profile from './pages/Profile'
 import MyFooter from './components/MyFooter';
-import { Container } from 'react-bootstrap';
+import {Container} from 'react-bootstrap';
 
 /*
 instanziare qui come costante:
@@ -26,26 +26,28 @@ padding/margin medium: 2.8rem;
 padding/margin large: 5.6rem;
 */
 
+export const addressMeltyFiNFT = "0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A";
+
+
 function App() {
-	const addressMeltyFiNFT = '0x0D9ad3C777b77195e84a2262DD4fFAf0AD142795';
-	return (
-		<div className="App">
-			<Bootstrap />
-			<MyNavbar />
-			<Container className='Body'>
-				<BrowserRouter>
-					<Routes>
-						<Route path="" element={<Home />} />
-						<Route path="home" element={<Home />} />
-						<Route path="lotteries" element={<Lotteries />} />
-						<Route path="profile" element={<Profile />} />
-						<Route path="*" element={<Home />} />
-					</Routes>
-				</BrowserRouter>
-			</Container>
-			<MyFooter />
-		</div>
-	);
+    return (
+        <div className="App">
+            <Bootstrap/>
+            <MyNavbar/>
+            <Container className="Body">
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="" element={<Home/>}/>
+                        <Route path="home" element={<Home/>}/>
+                        <Route path="lotteries" element={<Lotteries/>}/>
+                        <Route path="profile" element={<Profile/>}/>
+                        <Route path="*" element={<Home/>}/>
+                    </Routes>
+                </BrowserRouter>
+            </Container>
+            <MyFooter/>
+        </div>
+    );
 }
 
 export default App;

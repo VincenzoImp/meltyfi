@@ -1,10 +1,12 @@
-import {Col, Container, Row} from 'react-bootstrap';
+import {Card, Col, Container, Row} from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
 import ChocoChip from "../contracts/ChocoChip.json";
 import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
+import {addressMeltyFiNFT} from "../App";
+
 
 async function asyncFilter(arr, predicate) {
     const results = await Promise.all(arr.map(predicate));
@@ -39,7 +41,7 @@ async function getChocoChips(sdk, meltyfi, address) {
 async function loadProfileData(sdk, address) {
     if (address === undefined)
         return [[], [], [], 0]
-    const meltyfi = await sdk.getContract("0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A", MeltyFiNFT);
+    const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
     let [lotteries, owned, applied] = await loadLotteries(meltyfi, address);
     let fetched = {};
     const ownedMetadata = new Array(0);
