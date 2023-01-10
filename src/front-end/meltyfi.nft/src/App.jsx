@@ -7,6 +7,7 @@ import Lotteries from './pages/Lotteries';
 import Profile from './pages/Profile'
 import MyFooter from './components/MyFooter';
 import {Container} from 'react-bootstrap';
+import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 
 /*
 instanziare qui come costante:
@@ -27,7 +28,7 @@ padding/margin large: 5.6rem;
 */
 
 export const addressMeltyFiNFT = "0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A";
-
+export const sdk = new ThirdwebSDK("goerli");
 
 function App() {
     return (
