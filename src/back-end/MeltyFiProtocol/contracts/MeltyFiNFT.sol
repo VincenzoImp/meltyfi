@@ -10,6 +10,8 @@ import "./LogoCollection.sol";
 import "./MeltyFiDAO.sol";
 /// VRFv2Consumer.sol is a contract that provides functionality for verifying proof of work
 import "./VRFv2Consumer.sol";
+///Ownable.sol is a contract that provides a basic access control mechanism
+import "@openzeppelin/contracts/access/Ownable.sol";
 /// IERC721.sol is an interface that defines the required methods for an ERC721 contract
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
 /// IERC721Receiver.sol is an interface that defines methods for receiving ERC721 tokens
@@ -40,7 +42,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
  *         the contract refunds WonkaBars holders with Ether of the lottery owners. Plus every
  *         wonkabar holder is rewarded with ChocoCips.
  */
-contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
+contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, AutomationCompatibleInterface {
 
     /// Data type representing the possible states of a lottery
     enum lotteryState {
@@ -202,6 +204,15 @@ contract MeltyFiNFT is IERC721Receiver, ERC1155Supply, AutomationBase, Automatio
         bytes calldata data
     ) external pure returns (bytes4) {
         return IERC721Receiver.onERC721Received.selector;
+    }
+
+    /**
+     * @notice This function allows the owner of the contract to take a snapshot of the choco chip balance
+     */
+    function snapshotChocoChip() external onlyOwner
+    {
+        /// call the snapshot function of ChocoChip contract
+        _contractChocoChip.snapshot();
     }
 
     /**
