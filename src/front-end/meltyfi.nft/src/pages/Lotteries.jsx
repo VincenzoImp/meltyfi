@@ -5,6 +5,7 @@ import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 import {addressMeltyFiNFT} from "../App";
+import BuyWonkaBar from '../components/buyWonkaBar.jsx';
 
 
 
@@ -49,7 +50,7 @@ function useRenderLotteries(sdk) {
     useEffect(() => {
         getLotteries(sdk).then(setLotteries)
     });
-    const buyWonkaBars = () => {alert("ciao")}
+
     
     return lotteries.map((lottery) => {
         const date = new Date(parseInt(lottery.expiration) * 1000);
@@ -58,14 +59,13 @@ function useRenderLotteries(sdk) {
             <li> Expiry date: {dateString} </li>
             <li> WonkaBar price: {parseInt(lottery.wonkaBarPrice)}</li>
             <li> Remaining WonkaBars: {parseInt(lottery.remainingWonkaBars)}</li>
-            </p>;
+            </p> ;
+        const myButton = <BuyWonkaBar/>;
         return <Col>
             {LotteryCard({
                 src: lottery.image,
                 name: lottery.name,
-                text,
-                onClickFunction: buyWonkaBars,
-                onClickText: "Buy Wonka Bars"
+                text: myButton,
             })}
         </Col>
     });
