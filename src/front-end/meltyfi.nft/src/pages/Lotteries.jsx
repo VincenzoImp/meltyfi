@@ -2,7 +2,7 @@ import LotteryCard from '../components/lotteryCard.jsx';
 import { Container, Row, Col } from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 import {useAddress} from "@thirdweb-dev/react";
-import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
+import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 import {addressMeltyFiNFT} from "../App";
 import BuyWonkaBar from '../components/buyWonkaBar.jsx';

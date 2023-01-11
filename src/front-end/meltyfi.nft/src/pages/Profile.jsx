@@ -1,7 +1,7 @@
 import {Card, Col, Container, Row} from "react-bootstrap";
 import {useAddress} from "@thirdweb-dev/react";
-import MeltyFiNFT from "../contracts/MeltyFiNFT.json";
-import ChocoChip from "../contracts/ChocoChip.json";
+import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
+import ChocoChip from "../ABIs/ChocoChip.json";
 import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
 import {addressMeltyFiNFT, sdk} from "../App";
