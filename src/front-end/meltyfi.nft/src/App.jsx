@@ -27,7 +27,7 @@ padding/margin medium: 2.8rem;
 padding/margin large: 5.6rem;
 */
 
-export const addressMeltyFiNFT = "0x4dD4451E62f2b5faDf3fFc981880dBB36F97157A";
+export const addressMeltyFiNFT = "0x8fDa2E4E75e2966757ccC32369B885F2244BD77A";
 export const sdk = new ThirdwebSDK("goerli");
 
 function App() {
