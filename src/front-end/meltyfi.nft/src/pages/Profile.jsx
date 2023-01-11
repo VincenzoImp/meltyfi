@@ -140,12 +140,6 @@ function getOwnedCards(lotteries) {
     });
 }
 
-/*
-    let button = undefined;
-    if (onClickFunction !== undefined) {
-        button = <Button className='CardButton' onClick={onClickFunction}>{onClickText}</Button>;
-    }*/
-
 function getAppliedCards(lotteries) {
     return lotteries.map((data) => {
         let text, action = undefined;
