@@ -1,100 +1,106 @@
 .App {
-	min-height: 100vh;
-	color: #d9ad91;
-	background-image: url('../images/background.png');
-	background-position: center;
-	background-size: cover;
+    min-height: 100vh;
+    color: #d9ad91;
+    background-image: url('../images/background.png');
+    background-position: center;
+    background-size: cover;
 }
 
 .App-link:hover {
-	color: #725a56;
+    color: #725a56;
 }
 
 .Top {
-	padding-top: 1.4rem;
-	padding-bottom: 1.4rem;
-	justify-content: center;
-	background-color: #3d1a0c;
-	border-bottom-left-radius: 1rem;
-	border-bottom-right-radius: 1rem;
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+    justify-content: center;
+    background-color: #3d1a0c;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
 }
 
 .Title {
-	text-align: center;
+    text-align: center;
 }
 
 .Navbar {
-	justify-content: center !important;
+    justify-content: center !important;
 }
 
 .NavLink {
-	color: #d9ad91 !important;
-	font-size: 1.5rem !important;
+    color: #d9ad91 !important;
+    font-size: 1.5rem !important;
 }
 
 .Body {
-	background-color: #3d1a0c;
-	margin-top: 5.6rem;
-	margin-bottom: 5.6rem;
-	border-radius: 1rem;
-	padding: 1rem;
+    background-color: #3d1a0c;
+    margin-top: 5.6rem;
+    margin-bottom: 5.6rem;
+    border-radius: 1rem;
+    padding: 1rem;
 }
 
 .Footer {
-	border-top-left-radius: 1rem;
-	border-top-right-radius: 1rem;
-	background-color: #3d1a0c;
-	text-align: center;
-	padding-top: 1.4rem;
-	padding-bottom: 1.4rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    background-color: #3d1a0c;
+    text-align: center;
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
 }
 
 .Footer a {
-	color: #d9ad91;
+    color: #d9ad91;
 }
 
 .Footer a:hover {
-	color: #725a56;
+    color: #725a56;
 }
 
 .Card {
-	width: 20rem;
-	height: 30rem;
-	color: #3d1a0c;
-	border-radius: 0.5rem !important;
-	margin-top: 0.7rem;
-	margin-bottom: 0.7rem;
+    width: 20rem;
+    height: 30rem;
+    color: #3d1a0c;
+    border-radius: 0.5rem !important;
+    margin-top: 0.7rem;
+    margin-bottom: 0.7rem;
 }
 
 .CardImg {
-	width: 20rem;
-	height: 20rem;
-	overflow: hidden;
+    width: 20rem;
+    height: 20rem;
+    overflow: hidden;
 }
 
 .CardBody {
-	width: 20rem;
-	background-color: #d9ad91;
-	border-bottom-left-radius: 0.5rem;
-	border-bottom-right-radius: 0.5rem;
-	/*
-	se si vuole il body della carta centrato
-	text-align: center !important;
-	*/
+    width: 20rem;
+    background-color: #d9ad91;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    /*
+    se si vuole il body della carta centrato
+    text-align: center !important;
+    */
 }
 
 .CardTitle {
-	height: 1.5rem;
-	overflow: hidden;
+    height: 1.5rem;
+    overflow: hidden;
 }
 
 .CardText {
-	height: 6rem;
-	overflow: hidden;
+    height: 6rem;
+    overflow: hidden;
 }
 
 .CardButton {
-	height: 2.5rem;
-	background-color: #3d1a0c !important;
-	border: #3d1a0c !important;
+    height: 2.5rem;
+    background-color: #3d1a0c !important;
+    border: #3d1a0c !important;
+}
+
+.PleaseLogin {
+    min-height: 60vh;
+    text-align: center;
+    padding: 100px;
 }

@@ -218,9 +218,8 @@ function Profile() {
             <h2>Your WonkaBars</h2>
             <Row>{getAppliedCards(applied)}</Row>
         </Container>;
-
     } else {
-        profileSection = <h1>Connect your wallet to access your profile</h1>
+        profileSection = <div className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></div>
     }
     return profileSection;
 }
