@@ -12,7 +12,7 @@ function BuyWonkaBar() {
 
   return (
     <>
-      <Button variant="primary" onClick={handleShow}>
+      <Button className="CardButton" onClick={handleShow}>
         Buy Wonka Bar
       </Button>
 
@@ -36,12 +36,13 @@ function BuyWonkaBar() {
               />
             </Form.Group>
           </Form>
+          <p>Total cost: ... ethers</p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>
             Discard
           </Button>
-          <Button variant="primary" onClick={handleClose}>
+          <Button className="CardButton" onClick={handleClose}>
             Buy wonka bar
           </Button>
         </Modal.Footer>

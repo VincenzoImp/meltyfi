@@ -14,6 +14,9 @@ async function getNFTData(sdk, meltyfi, lottery) {
     const token = await meltyfi.call("getLotteryPrizeTokenId", lottery);
     const metadata = (await contract.get(token)).metadata;
     const owner = await meltyfi.call("getLotteryOwner", lottery);
+    const collectionName = await contract.call('name');
+    console.log(collectionName);
+    console.log(metadata.id);
     return {contract, token, name: metadata.name, image: metadata.image, owner};
 }
 
@@ -49,12 +52,12 @@ function useRenderLotteries(sdk) {
     const [lotteries, setLotteries] = useState([]);
     useEffect(() => {
         getLotteries(sdk).then(setLotteries)
-    });
+    }, []);
 
     
     return lotteries.map((lottery) => {
         const date = new Date(parseInt(lottery.expiration) * 1000);
-        const dateString = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+        const dateString = date.toLocaleString();
         const text = <p>
             <li> Expiry date: {dateString} </li>
             <li> WonkaBar price: {parseInt(lottery.wonkaBarPrice)}</li>
@@ -65,7 +68,9 @@ function useRenderLotteries(sdk) {
             {LotteryCard({
                 src: lottery.image,
                 name: lottery.name,
-                text: myButton,
+                text: text,
+                lotteryId: 1,
+                action: myButton
             })}
         </Col>
     });
