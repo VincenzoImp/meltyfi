@@ -8,8 +8,8 @@ import "./ChocoChip.sol";
 import "./LogoCollection.sol";
 /// MeltyFiDAO.sol is the governance contract of the MeltyFi protocol
 import "./MeltyFiDAO.sol";
-/// VRFv2Consumer.sol is a contract that provides functionality for verifying proof of work
-import "./VRFv2Consumer.sol";
+/// VRFv2DirectFundingConsumer.sol is a contract that generates random number
+import "./VRFv2DirectFundingConsumer.sol";
 /// AutomationBase.sol is a contract that provides basic functionality for integration with Chainlink, a platform for creating connections between smart contracts and external services
 import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
 /// AutomationCompatibleInterface.sol is an interface that defines the required methods for being compatible with the Chainlink platform and using its automation functionality
@@ -89,8 +89,8 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     LogoCollection internal immutable _contractLogoCollection;
     /// Instance of the MeltyFiDAO contract
     MeltyFiDAO internal immutable _contractMeltyFiDAO;
-    /// Instance of the VRFv2Consumer contract
-    VRFv2Consumer internal immutable _contractVRFv2Consumer;
+    /// Instance of the VRFv2DirectFundingConsumer contract
+    VRFv2DirectFundingConsumer internal immutable _contractVRFv2DirectFundingConsumer;
 
     /// Amount of ChocoChips per Ether
     uint256 internal immutable _amountChocoChipPerEther;
@@ -143,7 +143,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         ChocoChip contractChocoChip,
         LogoCollection contractLogoCollection,
         MeltyFiDAO contractMeltyFiDAO,
-        VRFv2Consumer contractVRFv2Consumer
+        VRFv2DirectFundingConsumer contractVRFv2DirectFundingConsumer
     ) ERC1155("https://ipfs.io/ipfs/QmTiQsRBGcKyyipnRGVTu8dPfykM89QHn81KHX488cTtxa")
     {
         /// The ChocoChip contract and the MeltyFiDAO token must be the same contract
@@ -161,16 +161,16 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
             contractLogoCollection.owner() == _msgSender(),
             "MeltyFiNFT: the owner of contractLogoCollection is not the current message sender"
         );
-        /// The caller must be the owner of the VRFv2Consumer contract.
+        /// The caller must be the owner of the VRFv2DirectFundingConsumer contract.
         require(
-            contractVRFv2Consumer.owner() == _msgSender(), 
-            "MeltyFiNFT: the owner of contractVRFv2Consumer is not the current message sender"
+            contractVRFv2DirectFundingConsumer.owner() == _msgSender(), 
+            "MeltyFiNFT: the owner of contractVRFv2DirectFundingConsumer is not the current message sender"
         );
         /// Initializing the immutable variables
         _contractChocoChip = contractChocoChip;
         _contractLogoCollection = contractLogoCollection;
         _contractMeltyFiDAO = contractMeltyFiDAO;
-        _contractVRFv2Consumer = contractVRFv2Consumer;
+        _contractVRFv2DirectFundingConsumer = contractVRFv2DirectFundingConsumer;
         _amountChocoChipPerEther = 1000;
         _royaltyDAOPercentage = 5;
         _upperLimitBalanceOfPercentage = 25;
@@ -321,6 +321,17 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     }
 
     /**
+     * @dev An internal function that returns the address of the VRFv2DirectFundingConsumer contract.
+     *
+     * @return The address of the VRFv2DirectFundingConsumer contract.
+     */
+    function _addressVRFv2DirectFundingConsumer() internal view returns (address) 
+    {
+        /// return the address of the VRFv2DirectFundingConsumer contract
+        return address(_contractVRFv2DirectFundingConsumer);
+    }
+
+    /**
      * @dev An internal function that calculates the amount to refund to a given address for a given lottery.
      *      This function is called only if the lottery is cancelled. 
      *
@@ -416,6 +427,17 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     }
 
     /**
+     * @notice Returns the address of the VRFv2DirectFundingConsumer contract.
+     *
+     * @return The address of the VRFv2DirectFundingConsumer contract.
+     */
+    function addressVRFv2DirectFundingConsumer() external view returns (address) 
+    {
+        /// call the internal function to return the address of the VRFv2DirectFundingConsumer contract
+        return _addressVRFv2DirectFundingConsumer();
+    }
+
+    /**
      * @notice Returns the amount to refund to a given address for a given lottery.
      *
      * @param lotteryId The ID of the lottery for which to calculate the refund amount.
@@ -470,145 +492,18 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         return _amountChocoChipPerEther;
     }
     
+    /**
+     * @notice Returns the struct of given lottery.
+     *
+     * @param lotteryId The ID of the lottery for which to retrieve struct.
+     *
+     * @return The struct of given lottery.
+     */
     function getLottery(
         uint256 lotteryId
     ) external view returns (Lottery memory)
     {
         return _lotteryIdToLottery[lotteryId];
-    }
-    /**
-     * @notice Returns the expiration date of a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the expiration date.
-     *
-     * @return The expiration date of the given lottery.
-     */
-    function getLotteryExpirationDate(
-        uint256 lotteryId
-    ) external view returns (uint256) 
-    {
-        /// return the expiration date (in seconds) of the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].expirationDate;
-    }
-
-    /**
-     * @notice Returns the owner of a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the owner.
-     *
-     * @return The owner of the given lottery.
-     */
-    function getLotteryOwner(
-        uint256 lotteryId
-    ) external view returns (address) 
-    {
-        /// return the owner of the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].owner;
-    }
-
-    /**
-     * @notice Returns the address of the prize contract for a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the prize contract address.
-     *
-     * @return The address of the prize contract for the given lottery.
-     */
-    function getLotteryPrizeContract(
-        uint256 lotteryId
-    ) external view returns (address) 
-    {
-        /// return the address of the prize contract for the lottery with the given ID
-        return address(_lotteryIdToLottery[lotteryId].prizeContract);
-    }
-
-    /**
-     * @notice Returns the token ID of the prize for a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the prize token ID.
-     *
-     * @return The token ID of the prize for the given lottery.
-     */
-    function getLotteryPrizeTokenId(
-        uint256 lotteryId
-    ) external view returns (uint256) 
-    {
-        /// return the token ID of the prize for the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].prizeTokenId;
-    }
-
-    /**
-     * @notice Returns the state of a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the state.
-     *
-     * @return The state of the given lottery.
-     */
-    function getLotteryState(
-        uint256 lotteryId
-    ) external view returns (lotteryState) 
-    {
-        /// return the state of the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].state;
-    }
-
-    /**
-     * @notice Returns the winner of a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the winner.
-     *
-     * @return The winner of the given lottery.
-     */
-    function getWinner(
-        uint256 lotteryId
-    ) external view returns (address) 
-    {
-        /// return the winner of the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].winner;
-    }
-
-    /**
-     * @notice Returns the number of Wonka Bars sold in a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the number of Wonka Bars sold.
-     *
-     * @return The number of Wonka Bars sold in the given lottery.
-     */
-    function getLotteryWonkaBarsSold(
-        uint256 lotteryId
-    ) external view returns (uint256) 
-    {
-        /// return the number of Wonka Bars sold in the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].wonkaBarsSold;
-    }
-
-    /**
-     * @notice Returns the maximum number of Wonka Bars for sale in a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the maximum number of Wonka Bars for sale.
-     *
-     * @return The maximum number of Wonka Bars for sale in the given lottery.
-     */
-    function getLotteryWonkaBarsMaxSupply(
-        uint256 lotteryId
-    ) external view returns (uint256) 
-    {
-        /// return the maximum number of Wonka Bars that can be sold in the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].wonkaBarsMaxSupply;
-    }
-
-    /**
-     * @notice Returns the price of a Wonka Bar in a given lottery.
-     *
-     * @param lotteryId The ID of the lottery for which to retrieve the price of a Wonka Bar.
-     *
-     * @return The price of a Wonka Bar in the given lottery.
-     */
-    function getLotteryWonkaBarPrice(
-        uint256 lotteryId
-    ) external view returns (uint256) 
-    {
-        /// return the price of a Wonka Bar in the lottery with the given ID
-        return _lotteryIdToLottery[lotteryId].wonkaBarPrice;
     }
 
     /**
@@ -924,8 +819,8 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
             /// set lottery winner
             EnumerableSet.AddressSet storage wonkaBarHolders = _lotteryIdToWonkaBarHolders[lotteryId];
             uint256 numberOfWonkaBarHolders = wonkaBarHolders.length();
-            uint256 requestId = _contractVRFv2Consumer.requestRandomWords();
-            (bool fulfilled, uint256[] memory randomWords) = _contractVRFv2Consumer.getRequestStatus(requestId);
+            uint256 requestId = _contractVRFv2DirectFundingConsumer.requestRandomWords();
+            (uint256 paid, bool fulfilled, uint256[] memory randomWords) = _contractVRFv2DirectFundingConsumer.getRequestStatus(requestId);
             /// The VRF request for random words must be fulfilled
             require(
                 fulfilled, 
@@ -1059,7 +954,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
      */
     function performUpkeep(
         bytes calldata performData
-    ) external 
+    ) external
     {
         uint256 lotteryId = abi.decode(performData, (uint256));
         /// call the drawWinner function to draw the winner and update the state of the lottery

@@ -61,9 +61,9 @@ async function main() {
 	const contractTimelockController = await deployContract('TimelockController', [3600, [], [], deployer.address], deployer);
 	const contractMeltyFiDAO = await deployContract('MeltyFiDAO', [contractChocoChip.address, contractTimelockController.address], deployer);
 	
-	const contractVRFv2Consumer = await deployContract('VRFv2Consumer', [8208], deployer);
+	const contractVRFv2DirectFundingConsumer = await deployContract('VRFv2DirectFundingConsumer', [], deployer);
 	
-	const contractMeltyFiNFT = await deployContract('MeltyFiNFT', [contractChocoChip.address, contractLogoCollection.address, contractMeltyFiDAO.address, contractVRFv2Consumer.address], deployer);
+	const contractMeltyFiNFT = await deployContract('MeltyFiNFT', [contractChocoChip.address, contractLogoCollection.address, contractMeltyFiDAO.address, contractVRFv2DirectFundingConsumer.address], deployer);
 
 	console.log(`transferOwnership of ChocoChip contract from deployer to MeltyFiNFT contract...`);
 	const result1 = await contractChocoChip.transferOwnership(contractMeltyFiNFT.address);
@@ -77,8 +77,8 @@ async function main() {
 	console.log(`Transaction successed`);
 	console.log();
 	
-	console.log(`transferOwnership of VRFv2Consumer contract from deployer to MeltyFiNFT contract...`);
-	const result3 = await contractVRFv2Consumer.transferOwnership(contractMeltyFiNFT.address);
+	console.log(`transferOwnership of VRFv2DirectFundingConsumer contract from deployer to MeltyFiNFT contract...`);
+	const result3 = await contractVRFv2DirectFundingConsumer.transferOwnership(contractMeltyFiNFT.address);
 	console.log(`Transaction hash: ${result3.hash}`);
 	console.log(`Transaction successed`);
 	console.log();
