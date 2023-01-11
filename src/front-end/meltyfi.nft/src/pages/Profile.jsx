@@ -157,7 +157,7 @@ function getAppliedCards(lotteries) {
                 Melt {data.wonkaBarsOwned} WonkaBars
             </Button>
         } else {
-            let state, winner = undefined, receive;
+            let state, winner, receive;
             action = <Button className='CardButton' onClick={async () => {
                 const provider = new ethers.providers.Web3Provider(window.ethereum)
                 await provider.send("eth_requestAccounts", []);
@@ -171,17 +171,18 @@ function getAppliedCards(lotteries) {
             </Button>;
             if (data.state === 1) {
                 state = "Canceled";
-                winner = "No winner";
+                winner = <li>No winner</li>;
                 receive = "refund and ChocoChips";
             } else {
                 state = "Concluded";
-                const url = `https://goerli.etherscan.io/address/${winner}`;
-                winner = <a href={url}>Winner</a>;
+                const url = `https://goerli.etherscan.io/address/${data.winner}`;
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                winner = <li>Winner: <a href={url}>{data.winner.slice(0, 6)}...{data.winner.slice(-4)}</a></li>;
                 receive = "ChocoChips";
             }
             text = <Card.Text>
                 <li>State: {state}</li>
-                <li>{winner}</li>
+                {winner}
                 <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
                 <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
                 <li>You will receive: {receive}</li>
