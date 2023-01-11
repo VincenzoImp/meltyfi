@@ -19,13 +19,14 @@ async function asyncFilter(arr, predicate) {
 // }
 
 async function loadLotteries(meltyfi, address) {
-    const lotteries = await meltyfi.call("activeLotteryIds");
-    const [owned, applied] = await Promise.all([
-            asyncFilter(lotteries, async lottery => await meltyfi.call("getLotteryOwner", lottery) === address),
-            meltyfi.call("holderInLotteryIds", address)
-        ])
-    ;
-    return [lotteries, owned, applied];
+    let [owned, applied] = await Promise.all([
+        asyncFilter(
+            await meltyfi.call("ownedLotteryIds", address),
+            async lottery => await meltyfi.call("getLotteryState", lottery) === 0
+        ),
+        meltyfi.call("holderInLotteryIds", address)
+    ]);
+    return [owned, applied];
 }
 
 async function loadMetadata(meltyfi, lottery, address) {
