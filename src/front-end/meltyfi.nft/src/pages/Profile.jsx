@@ -108,7 +108,7 @@ function getOwnedCards(lotteries) {
             <li>Expire date: {data.expirationDate.toLocaleString()}</li>
             <li>
                 Wonka Bars
-                sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ( {data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
+                sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ({data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
             </li>
         </Card.Text>
         const toRepayETH = ethers.utils.formatUnits(data.amountToRepay, "ether");
@@ -152,8 +152,11 @@ function getAppliedCards(lotteries) {
         if (data.state === 0) {
             text = <Card.Text>
                 <li>Expire date: {data.expirationDate.toLocaleString()}</li>
-                <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
-                <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+                <li>Wonka Bars owned: {data.wonkaBarsOwned} ({data.wonkaBarsOwned / data.wonkaBarsMaxSupply * 100}%)
+                </li>
+                <li>Wonka Bars
+                    sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ({data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
+                </li>
             </Card.Text>
         } else {
             let state, winner = undefined, receive;
