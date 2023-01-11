@@ -28,7 +28,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
 
 /**
- * @notice MeltyFiNFT is the contract that run the protocol of the MeltyFi platform.
+ * @notice MeltyFiNFT is the contract that that runs the core functionality of the MeltyFi protocol.
  *         It manages the creation, cancellation and conclusion of lotteries, as well as the
  *         sale and refund of WonkaBars for each lottery, and also reward good users with ChocoChips.
  *         The contract allows users to create a lottery by choosing their NFT to put as lottery prize,
