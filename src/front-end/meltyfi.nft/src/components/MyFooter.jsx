@@ -28,15 +28,11 @@ function MyFooter() {
             <Row>
                 <Col>
                     <div>MeltyFiNFT address: <a href={getLink(meltyfi)}>{meltyfi}</a></div>
-                </Col>
-                <Col>
-                    <div>LogoCollection address: <a href={getLink(logoCollection)}>{logoCollection}</a></div>
+                    <div>MeltyFiDAO address: <a href={getLink(meltyfiDAO)}>{meltyfiDAO}</a></div>
                 </Col>
                 <Col>
                     <div>ChocoChip address: <a href={getLink(chocoChip)}>{chocoChip}</a></div>
-                </Col>
-                <Col>
-                    <div>MeltyFiDAO address: <a href={getLink(meltyfiDAO)}>{meltyfiDAO}</a></div>
+                    <div>LogoCollection address: <a href={getLink(logoCollection)}>{logoCollection}</a></div>
                 </Col>
             </Row>
         </Container>
