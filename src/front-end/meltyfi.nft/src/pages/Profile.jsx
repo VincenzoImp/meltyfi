@@ -154,26 +154,34 @@ function getAppliedCards(lotteries) {
                 <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
             </Card.Text>
         } else {
-            let state, winner = undefined;
+            let state, winner = undefined, receive;
+            action = <Button className='CardButton' onClick={async () => {
+                const provider = new ethers.providers.Web3Provider(window.ethereum)
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
+                meltyfi = meltyfi.connect(signer);
+                const response = await meltyfi.meltWonkaBars(data.lottery, data.wonkaBarsOwned);
+                console.log("response", response);
+            }}>
+                Melt {data.wonkaBarsOwned} WonkaBars
+            </Button>;
             if (data.state === 1) {
                 state = "Canceled";
                 winner = "No winner";
-                action = <Button className='CardButton' onClick={() => {
-                    alert("Get refund and ChocoChips")
-                }}>Get refund and ChocoChips</Button>;
+                receive = "refund and ChocoChips";
             } else {
                 state = "Concluded";
                 const url = `https://goerli.etherscan.io/address/${winner}`;
-                winner = <a href={url}>{data.winner}</a>;
-                action = <Button className='CardButton' onClick={() => {
-                    alert("Get ChocoChips")
-                }}>Get ChocoChips</Button>;
+                winner = <a href={url}>Winner</a>;
+                receive = "ChocoChips";
             }
             text = <Card.Text>
                 <li>State: {state}</li>
                 <li>{winner}</li>
                 <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
                 <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+                <li>You will receive: {receive}</li>
             </Card.Text>
         }
         return <Col>
