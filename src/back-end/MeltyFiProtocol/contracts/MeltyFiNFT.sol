@@ -10,25 +10,25 @@ import "./LogoCollection.sol";
 import "./MeltyFiDAO.sol";
 /// VRFv2Consumer.sol is a contract that provides functionality for verifying proof of work
 import "./VRFv2Consumer.sol";
-///Ownable.sol is a contract that provides a basic access control mechanism
-import "@openzeppelin/contracts/access/Ownable.sol";
-/// IERC721.sol is an interface that defines the required methods for an ERC721 contract
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
-/// IERC721Receiver.sol is an interface that defines methods for receiving ERC721 tokens
-import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-/// ERC1155Supply.sol is a contract that extends the ERC1155 contract and provides functionality for managing the supply of ERC1155 tokens
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 /// AutomationBase.sol is a contract that provides basic functionality for integration with Chainlink, a platform for creating connections between smart contracts and external services
 import "@chainlink/contracts/src/v0.8/AutomationBase.sol";
 /// AutomationCompatibleInterface.sol is an interface that defines the required methods for being compatible with the Chainlink platform and using its automation functionality
 import "@chainlink/contracts/src/v0.8/interfaces/AutomationCompatibleInterface.sol";
+///Ownable.sol is a contract that provides a basic access control mechanism
+import "@openzeppelin/contracts/access/Ownable.sol";
+/// ERC1155Supply.sol is a contract that extends the ERC1155 contract and provides functionality for managing the supply of ERC1155 tokens
+import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
+/// IERC721.sol is an interface that defines the required methods for an ERC721 contract
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol"; 
+/// IERC721Receiver.sol is an interface that defines methods for receiving ERC721 tokens
+import"@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 /// Address library provides utilities for working with addresses
 import "@openzeppelin/contracts/utils/Address.sol"; 
 /// EnumerableSet library provides a data structure for storing and iterating over sets of values
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol"; 
 
 /**
- * @notice MeltyFiNFT is the contract that run the protocol of the MeltyFi platform.
+ * @notice MeltyFiNFT is the contract that that runs the core functionality of the MeltyFi protocol.
  *         It manages the creation, cancellation and conclusion of lotteries, as well as the
  *         sale and refund of WonkaBars for each lottery, and also reward good users with ChocoChips.
  *         The contract allows users to create a lottery by choosing their NFT to put as lottery prize,
@@ -376,7 +376,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
      *
      * @return An array of the IDs of all active lotteries.
      */
-    function activeLotteryIds() external view returns(uint256[] memory )
+    function activeLotteryIds() external view returns(uint256[] memory)
     {
         // return the values of _activeLotteryIds
         return _activeLotteryIds.values();
@@ -470,6 +470,12 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         return _amountChocoChipPerEther;
     }
     
+    function getLottery(
+        uint256 lotteryId
+    ) external view returns (Lottery memory)
+    {
+        return _lotteryIdToLottery[lotteryId];
+    }
     /**
      * @notice Returns the expiration date of a given lottery.
      *
