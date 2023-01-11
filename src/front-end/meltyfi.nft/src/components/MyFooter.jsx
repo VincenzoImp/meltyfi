@@ -1,6 +1,6 @@
 import {Col, Container, Row} from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
-import ABI from "../contracts/MeltyFiNFT.json";
+import ABI from "../ABIs/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 import {addressMeltyFiNFT} from "../App";
 
