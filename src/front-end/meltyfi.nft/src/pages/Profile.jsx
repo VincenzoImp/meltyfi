@@ -51,6 +51,7 @@ async function loadMetadata(meltyfi, lottery, address) {
         lottery,
         name: nft.metadata.name,
         image: nft.metadata.image,
+        prizeTokenId: nft.metadata.id,
         collection,
         owner,
         expirationDate,
@@ -114,9 +115,9 @@ function getOwnedCards(lotteries) {
         return <Col>
             {LotteryCard({
                 src: data.image,
-                name: data.name,
-                text,
+                tokenId: data.prizeTokenId,
                 collection: data.collection,
+                text,
                 lotteryId: data.lottery,
                 action: <Button className='CardButton' onClick={
                     async () => {
@@ -188,9 +189,9 @@ function getAppliedCards(lotteries) {
         return <Col>
             {LotteryCard({
                 src: data.image,
-                name: data.name,
-                text,
+                tokenId: data.prizeTokenId,
                 collection: data.collection,
+                text,
                 lotteryId: data.lottery,
                 action
             })}
