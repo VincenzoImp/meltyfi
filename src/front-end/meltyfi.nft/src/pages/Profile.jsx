@@ -209,27 +209,20 @@ function Profile() {
     }, [address]);
     // eslint-disable-next-line no-unused-vars
     const [owned, applied, chocoChips] = profileData;
-    let lotteriesSection;
+    let profileSection;
     if (address !== undefined) {
-        lotteriesSection = <Container>
-            <div>Your ChocoChip balance: {chocoChips}</div>
-            Owned:<br/>
-            <Container>
-                <Row>{getOwnedCards(owned)}</Row>
-            </Container>
-            Applied:<br/>
-            <Container>
-                <Row>{getAppliedCards(applied)}</Row>
-            </Container>
-        </Container>
+        profileSection = <Container>
+            <h3 align="right">ChocoChips: {chocoChips}</h3>
+            <h2>Your lotteries</h2>
+            <Row>{getOwnedCards(owned)}</Row>
+            <h2>Your WonkaBars</h2>
+            <Row>{getAppliedCards(applied)}</Row>
+        </Container>;
+
     } else {
-        lotteriesSection = <p>Connect your wallet to see your profile</p>
+        profileSection = <p>Connect your wallet to see your profile</p>
     }
-    return <Container>
-        <h1>Chi sono</h1>
-        The standard Lorem Ipsum passage<br/>
-        {lotteriesSection}
-    </Container>;
+    return profileSection;
 }
 
 export default Profile;
