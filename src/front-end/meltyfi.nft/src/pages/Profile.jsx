@@ -5,6 +5,8 @@ import ChocoChip from "../contracts/ChocoChip.json";
 import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
 import {addressMeltyFiNFT, sdk} from "../App";
+import Button from "react-bootstrap/Button";
+import {ethers} from "ethers";
 
 
 async function asyncFilter(arr, predicate) {
@@ -28,37 +30,36 @@ async function loadLotteries(meltyfi, address) {
 
 async function loadMetadata(meltyfi, lottery, address) {
     lottery = parseInt(lottery);
-    const prizeContract = await meltyfi.call("getLotteryPrizeContract", lottery);
-    let [contract, token] = await Promise.all([
+    // eslint-disable-next-line no-unused-vars
+    let [expirationDate, _, owner, prizeContract, prizeTokenId, state, winner, wonkaBarsSold, wonkaBarsMaxSupply, wonkaBarPrice] = await meltyfi.call(
+        "getLottery", lottery);
+    let [contract, wonkaBarsOwned] = await Promise.all([
         sdk.getContract(prizeContract, "nft-collection"),
-        meltyfi.call("getLotteryPrizeTokenId", lottery)
-    ]);
-    let [nft, owner, expirationDate, wonkaBarsTotal, wonkaBarsSold, wonkaBarsOwned, winner, state] = await Promise.all([
-        contract.get(token),
-        meltyfi.call("getLotteryOwner", lottery),
-        meltyfi.call("getLotteryExpirationDate", lottery),
-        meltyfi.call("getLotteryWonkaBarsMaxSupply", lottery),
-        meltyfi.call("getLotteryWonkaBarsSold", lottery),
         meltyfi.call("balanceOf", address, lottery),
-        meltyfi.call("getWinner", lottery),
-        meltyfi.call("getLotteryState", lottery),
     ]);
-    nft = nft.metadata;
+    let [nft, collection, amountToRepay] = await Promise.all([
+        contract.get(prizeTokenId),
+        contract.call("name"),
+        meltyfi.call("amountToRepay", lottery)
+    ]);
     expirationDate = new Date(Number(expirationDate) * 1000);
-    wonkaBarsTotal = Number(wonkaBarsTotal);
+    wonkaBarsMaxSupply = Number(wonkaBarsMaxSupply);
     wonkaBarsSold = Number(wonkaBarsSold);
     wonkaBarsOwned = Number(wonkaBarsOwned);
     return {
         lottery,
-        name: nft.name,
-        image: nft.image,
+        name: nft.metadata.name,
+        image: nft.metadata.image,
+        collection,
         owner,
         expirationDate,
-        wonkaBarsTotal,
+        wonkaBarsMaxSupply,
         wonkaBarsSold,
         wonkaBarsOwned,
+        wonkaBarPrice,
         winner,
-        state
+        state,
+        amountToRepay
     };
 }
 
@@ -100,60 +101,89 @@ async function loadProfileData(address) {
 }
 
 function getOwnedCards(lotteries) {
-    return lotteries.map((lottery) => {
+    return lotteries.map((data) => {
         let text = <Card.Text>
-            Expire date: {lottery.expirationDate.toLocaleString()}<br/>
-            Wonka Bars
-            sold: {lottery.wonkaBarsOwned}/{lottery.wonkaBarsTotal} ( {lottery.wonkaBarsSold / lottery.wonkaBarsTotal * 100}%)<br/>
+            <li>Expire date: {data.expirationDate.toLocaleString()}</li>
+            <li>
+                Wonka Bars
+                sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ( {data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
+            </li>
         </Card.Text>
+        const toRepayETH = ethers.utils.formatUnits(data.amountToRepay, "ether");
         return <Col>
             {LotteryCard({
-                src: lottery.image,
-                name: lottery.name,
+                src: data.image,
+                name: data.name,
                 text,
-                onClickFunction: () => {
-                    alert("ciao")
-                },
-                onClickText: "Repay loan"
+                collection: data.collection,
+                lotteryId: data.lottery,
+                action: <Button className='CardButton' onClick={
+                    async () => {
+                        const provider = new ethers.providers.Web3Provider(window.ethereum)
+                        await provider.send("eth_requestAccounts", []);
+                        const signer = provider.getSigner();
+                        let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
+                        meltyfi = meltyfi.connect(signer);
+                        const response = await meltyfi.repayLoan(
+                            data.lottery,
+                            {value: ethers.utils.parseEther(toRepayETH.toString())}
+                        );
+                        console.log("response", response);
+                    }
+                }>
+                    Repay {toRepayETH.toString()}ETH
+                </Button>
             })}
         </Col>
     });
 }
 
+/*
+    let button = undefined;
+    if (onClickFunction !== undefined) {
+        button = <Button className='CardButton' onClick={onClickFunction}>{onClickText}</Button>;
+    }*/
+
 function getAppliedCards(lotteries) {
-    return lotteries.map((lottery) => {
-        let text, onClickFunction = undefined, onClickText = undefined;
-        if (lottery.state === 0) {
+    return lotteries.map((data) => {
+        let text, action = undefined;
+        if (data.state === 0) {
             text = <Card.Text>
-                Expire date: {lottery.expirationDate.toLocaleString()}<br/>
-                Wonka Bars owned: {lottery.wonkaBarsOwned}<br/>
-                Wonka Bars sold: {lottery.wonkaBarsSold}/{lottery.wonkaBarsTotal}
+                <li>Expire date: {data.expirationDate.toLocaleString()}</li>
+                <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
+                <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
             </Card.Text>
         } else {
-            //todo onClickFunction, onClickText
             let state, winner = undefined;
-            if (lottery.state === 1) {
+            if (data.state === 1) {
                 state = "Canceled";
                 winner = "No winner";
+                action = <Button className='CardButton' onClick={() => {
+                    alert("Get refund and ChocoChips")
+                }}>Get refund and ChocoChips</Button>;
             } else {
                 state = "Concluded";
                 const url = `https://goerli.etherscan.io/address/${winner}`;
-                winner = <a href={url}>{lottery.winner}</a>;
+                winner = <a href={url}>{data.winner}</a>;
+                action = <Button className='CardButton' onClick={() => {
+                    alert("Get ChocoChips")
+                }}>Get ChocoChips</Button>;
             }
             text = <Card.Text>
-                State: {state}<br/>
-                {winner}<br/>
-                Wonka Bars owned: {lottery.wonkaBarsOwned}<br/>
-                Wonka Bars sold: {lottery.wonkaBarsSold}/{lottery.wonkaBarsTotal}
+                <li>State: {state}</li>
+                <li>{winner}</li>
+                <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
+                <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
             </Card.Text>
         }
         return <Col>
             {LotteryCard({
-                src: lottery.image,
-                name: lottery.name,
+                src: data.image,
+                name: data.name,
                 text,
-                onClickFunction,
-                onClickText
+                collection: data.collection,
+                lotteryId: data.lottery,
+                action
             })}
         </Col>;
     });
