@@ -220,7 +220,7 @@ function Profile() {
         </Container>;
 
     } else {
-        profileSection = <p>Connect your wallet to see your profile</p>
+        profileSection = <h1>Connect your wallet to access your profile</h1>
     }
     return profileSection;
 }
