@@ -470,6 +470,12 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         return _amountChocoChipPerEther;
     }
     
+    function getLottery(
+        uint256 lotteryId
+    ) external view returns (Lottery memory)
+    {
+        return _lotteryIdToLottery[lotteryId];
+    }
     /**
      * @notice Returns the expiration date of a given lottery.
      *
