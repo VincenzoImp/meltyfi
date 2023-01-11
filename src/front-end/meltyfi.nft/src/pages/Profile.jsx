@@ -73,7 +73,7 @@ async function loadProfileData(address) {
     if (address === undefined)
         return [[], [], [], 0]
     const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
-    let [lotteries, owned, applied] = await loadLotteries(meltyfi, address);
+    let [owned, applied] = await loadLotteries(meltyfi, address);
     let fetched = {};
     const ownedMetadata = new Array(0);
     // eslint-disable-next-line no-unused-vars
@@ -98,7 +98,7 @@ async function loadProfileData(address) {
         }
     }
     const chocoChips = Number(await getChocoChips(meltyfi, address));
-    return [lotteries, ownedMetadata, appliedMetadata, chocoChips];
+    return [ownedMetadata, appliedMetadata, chocoChips];
 }
 
 function getOwnedCards(lotteries) {
@@ -205,7 +205,7 @@ function Profile() {
         loadProfileData(address).then(setProfileData)
     }, [address]);
     // eslint-disable-next-line no-unused-vars
-    const [_lotteries, owned, applied, chocoChips] = profileData;
+    const [owned, applied, chocoChips] = profileData;
     let lotteriesSection;
     if (address !== undefined) {
         lotteriesSection = <Container>
