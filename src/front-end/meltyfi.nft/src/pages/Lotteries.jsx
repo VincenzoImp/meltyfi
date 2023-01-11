@@ -1,76 +1,82 @@
 import LotteryCard from '../components/lotteryCard.jsx';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import {ThirdwebSDK} from "@thirdweb-dev/sdk";
-import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
-import {addressMeltyFiNFT} from "../App";
+import {addressMeltyFiNFT, sdk} from "../App";
 import BuyWonkaBar from '../components/buyWonkaBar.jsx';
+import {ethers} from "ethers";
 
 
+async function getLotteryInfo(meltyfi, lottery) {
+    let lotteryId = parseInt(lottery);
+    let [expirationDate, _, owner, prizeContract, prizeTokenId, state, winner, wonkaBarsSold, wonkaBarsMaxSupply, wonkaBarPrice] = await meltyfi.call(
+        "getLottery", lotteryId);
 
-async function getNFTData(sdk, meltyfi, lottery) {
-    const contract = await sdk.getContract(await meltyfi.call("getLotteryPrizeContract", lottery), "nft-collection");
-    const token = await meltyfi.call("getLotteryPrizeTokenId", lottery);
-    const metadata = (await contract.get(token)).metadata;
-    const owner = await meltyfi.call("getLotteryOwner", lottery);
-    const collectionName = await contract.call('name');
-    console.log(collectionName);
-    console.log(metadata.id);
-    return {contract, token, name: metadata.name, image: metadata.image, owner};
-}
+    let contract = await sdk.getContract(prizeContract, "nft-collection");
 
-async function getLotteryInfo(meltyfi, lottery){
-    let [expiration, wonkaBarPrice, wonkaBarsMaxSupply, wonkaBarsSold] = await Promise.all([
-        meltyfi.call("getLotteryExpirationDate", lottery),
-        meltyfi.call("getLotteryWonkaBarPrice", lottery),
-        meltyfi.call("getLotteryWonkaBarsMaxSupply", lottery),
-        meltyfi.call("getLotteryWonkaBarsSold", lottery),
+    let [nft, collection] = await Promise.all([
+        contract.get(prizeTokenId),
+        contract.call("name"),
     ]);
-    
-    const remainingWonkaBars = await (wonkaBarsMaxSupply - wonkaBarsSold);
-      
-    return {expiration, wonkaBarPrice, wonkaBarsMaxSupply, remainingWonkaBars};
+
+    expirationDate = new Date(Number(expirationDate) * 1000);
+    wonkaBarsMaxSupply = Number(wonkaBarsMaxSupply);
+    wonkaBarsSold = Number(wonkaBarsSold);
+    wonkaBarPrice = ethers.utils.formatEther(parseInt(wonkaBarPrice));
+    return {
+        lotteryId,
+        name: nft.metadata.name,
+        image: nft.metadata.image,
+        prizeTokenId: nft.metadata.id,
+        collection,
+        expirationDate,
+        wonkaBarsMaxSupply,
+        wonkaBarsSold,
+        wonkaBarPrice
+    };
 }
 
-async function getLotteries(sdk){
+
+async function getLotteries(){
+    
     const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
     const lotteriesId = await meltyfi.call("activeLotteryIds");
     const lotteries = new Array();
 
     for (const lottery of lotteriesId){
-        const {expiration, wonkaBarPrice, wonkaBarsMaxSupply, remainingWonkaBars} = await getLotteryInfo(meltyfi, lottery);
-        const {contract, token, name, image} = await getNFTData(sdk, meltyfi, lottery);
-        lotteries.push({expiration, wonkaBarPrice, wonkaBarsMaxSupply, remainingWonkaBars, contract, token, name, image})
+        const lotteryInfo = await getLotteryInfo(meltyfi, lottery);
+        lotteries.push(lotteryInfo);
     }
     return lotteries;
 
 }
 
 
-function useRenderLotteries(sdk) {
+function RenderLotteries() {
     const [lotteries, setLotteries] = useState([]);
     useEffect(() => {
-        getLotteries(sdk).then(setLotteries)
+        getLotteries().then(setLotteries)
     }, []);
 
     
     return lotteries.map((lottery) => {
-        const date = new Date(parseInt(lottery.expiration) * 1000);
-        const dateString = date.toLocaleString();
+        const dateString = lottery.expirationDate.toLocaleString();
         const text = <p>
             <li> Expiry date: {dateString} </li>
-            <li> WonkaBar price: {parseInt(lottery.wonkaBarPrice)}</li>
-            <li> Remaining WonkaBars: {parseInt(lottery.remainingWonkaBars)}</li>
+            <li> WonkaBar price: {lottery.wonkaBarPrice} ETH</li>
+            <li> Sold WonkaBars: {lottery.wonkaBarsSold} out of {lottery.wonkaBarsMaxSupply}</li>
             </p> ;
-        const myButton = <BuyWonkaBar/>;
+        const buyWonkaBar = <BuyWonkaBar nftImg={lottery.image} tokenId={lottery.prizeTokenId} collection={lottery.collection} 
+                         lotteryId ={lottery.lotteryId} expirationDate = {dateString} wonkaBarPrice={parseInt(lottery.wonkaBarPrice)}/>;
         return <Col>
             {LotteryCard({
                 src: lottery.image,
-                name: lottery.name,
+                tokenId: lottery.prizeTokenId,
+                collection: lottery.collection,
                 text: text,
-                lotteryId: 1,
-                action: myButton
+                lotteryId: lottery.lotteryId,
+                action: buyWonkaBar
             })}
         </Col>
     });
@@ -78,15 +84,32 @@ function useRenderLotteries(sdk) {
 
 
 function Lotteries() {
-    const sdk = new ThirdwebSDK("goerli");
+    const [state, setState] = useState("Create Lotteries");
 
+  const handleClick = () => {
+    setState(state == "Create Lotteries" ? "Browse Lotteries" : "Create Lotteries");
+  }
+
+  if (state == "Browse Lotteries"){
+    return (
+    <Container>
+            <Button variant="primary" onClick={handleClick}>
+            {state}
+            </Button>
+        </Container>);
+  }
+  if (state == "Create Lotteries"){
     return (
         <Container>
+            <Button variant="primary" onClick={handleClick}>
+            {state}
+            </Button>
             <Row>
-                {useRenderLotteries(sdk)}
+                <RenderLotteries/>
             </Row>
         </Container>
     );
+}
 }
 
 export default Lotteries;
