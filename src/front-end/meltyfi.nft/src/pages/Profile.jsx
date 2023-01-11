@@ -142,7 +142,7 @@ function getOwnedCards(lotteries) {
 
 function getAppliedCards(lotteries) {
     return lotteries.map((data) => {
-        let text, action = undefined;
+        let text, action;
         if (data.state === 0) {
             text = <Card.Text>
                 <li>Expire date: {data.expirationDate.toLocaleString()}</li>
@@ -152,6 +152,10 @@ function getAppliedCards(lotteries) {
                     sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ({data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
                 </li>
             </Card.Text>
+            action = <Button className='CardButton' disabled={true} onClick={() => {
+            }}>
+                Melt {data.wonkaBarsOwned} WonkaBars
+            </Button>
         } else {
             let state, winner = undefined, receive;
             action = <Button className='CardButton' onClick={async () => {
