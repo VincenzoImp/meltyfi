@@ -53,12 +53,13 @@ async function main() {
 	const [deployer, ...otherAccounts] = await hre.ethers.getSigners();
 
 	const contractChocoChip = await deployContract('ChocoChip', [], deployer);
-	
+
 	const contractLogoCollection = await deployContract('LogoCollection', [], deployer);
-	
+
 	const contractTestCollection = await deployContract('TestCollection', [], deployer);
 
 	const contractTimelockController = await deployContract('TimelockController', [3600, [], [], deployer.address], deployer);
+
 	const contractMeltyFiDAO = await deployContract('MeltyFiDAO', [contractChocoChip.address, contractTimelockController.address], deployer);
 	
 	const contractVRFv2DirectFundingConsumer = await deployContract('VRFv2DirectFundingConsumer', [], deployer);
