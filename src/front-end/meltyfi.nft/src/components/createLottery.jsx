@@ -13,26 +13,6 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
 
-        /*contract.on("approvedNFT", (event) => {
-        //actually create the lottery ;
-      });*/
-    
-      let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-      meltyfi = meltyfi.connect(signer);
-      try{
-        const response = await meltyfi.createLottery(duration, prizeContract, prizeTokenId, wonkaBarPrice, wonkaBarsMaxSupply);
-      }
-     catch (err) {
-      return err;
-    }
-      return 0;
-}
-
-async function callApprove(prizeContract, prizeTokenId) {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner();
-    
     const contractApprove = new ethers.Contract(prizeContract, [{
         "inputs": [{
             "internalType": "address", "name": "to", "type": "address"
@@ -44,17 +24,28 @@ async function callApprove(prizeContract, prizeTokenId) {
     }], provider);
     const contractWithSigner = contractApprove.connect(signer);
 
-    try{
+
+        /*contract.on("approvedNFT", (event) => {
+        //actually create the lottery ;
+      });*/
+    
+      let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
+      meltyfi = meltyfi.connect(signer);
+      try{
         const approveResponse = await contractWithSigner.approve(addressMeltyFiNFT, prizeTokenId);
-        console.log(approveResponse);
+        const receipt = await provider.waitForTransaction(approveResponse.hash);
+        if (receipt.status) {
+            const response = await meltyfi.createLottery(duration, prizeContract, prizeTokenId, wonkaBarPrice, wonkaBarsMaxSupply);
+        } else {
+        console.log("Call failed!");
+        }
       }
      catch (err) {
       return err;
     }
       return 0;
+}
 
-  }
-  
 
   function CreateLottery(props) {
     const [show, setShow] = useState(false);
@@ -93,15 +84,6 @@ async function callApprove(prizeContract, prizeTokenId) {
     
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
-    const handleApprove = async () => {
-        const result = await callApprove(props.contract, props.tokenId);
-        if (result == 0){
-        }
-        else{
-          setShowAlert(true);
-          console.log(result);
-        }
-      };
     const handleBuy = async () => {
       const result = await callCreateLottery(duration, props.contract, props.tokenId, wonkaBarPrice, wonkaBarMaxSupply);
       if (result == 0){
@@ -166,9 +148,6 @@ async function callApprove(prizeContract, prizeTokenId) {
           <Modal.Footer>
             <Button variant="secondary" onClick={handleClose}>
               Cancel
-            </Button>
-            <Button className="CardButton" onClick={handleApprove}>
-              Approve token
             </Button>
             <Button className="CardButton" onClick={handleBuy}>
               Create lottery
