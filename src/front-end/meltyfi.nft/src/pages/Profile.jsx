@@ -18,7 +18,7 @@ async function loadLotteries(meltyfi, address) {
     let [owned, applied] = await Promise.all([
         asyncFilter(
             await meltyfi.call("ownedLotteryIds", address),
-            async lottery => await meltyfi.call("getLotteryState", lottery) === 0
+            async lottery => (await meltyfi.call("getLottery", lottery))[5] === 0
         ),
         meltyfi.call("holderInLotteryIds", address)
     ]);
