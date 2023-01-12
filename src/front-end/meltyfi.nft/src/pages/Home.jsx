@@ -5,21 +5,21 @@ function Home() {
     return (
         <Container>
             <h1>MeltyFi protocol</h1>
-            <h2>
-                The <b>MeltyFi protocol</b> is innovative solution for <b>peer - to - pool lending and borrowing with
-                NFT collateral</b>. Thanks to its structure and <b>independence from off-chain factors</b> such as the
-                floor price of NFTs, MeltyFi allows borrowers to easily obtain loans <b>without the risk of involuntary
-                liquidation of the NFT</b>, allowing them to obtain liquidity without risking the loss of their NFT.
-                Additionally, the MeltyFi protocol allows lenders to use their capital to <b>provide liquidity for loans
-                through a lottery system</b>. For this use of capital, lenders are obviously rewarded, and in the event
+            <h3>
+                The <b><u>MeltyFi protocol</u></b> is innovative solution for <b><u>peer - to - pool lending and borrowing with
+                NFT collateral</u></b>. Thanks to its structure and <b><u>independence from off-chain factors</u></b> such as the
+                floor price of NFTs, MeltyFi allows borrowers to easily obtain loans <b><u>without the risk of involuntary
+                liquidation of the NFT</u></b>, allowing them to obtain liquidity without risking the loss of their NFT.
+                Additionally, the MeltyFi protocol allows lenders to use their capital to <b><u>provide liquidity for loans
+                through a lottery system</u></b>. For this use of capital, lenders are obviously rewarded, and in the event
                 that the loan they funded is not repaid, they have the opportunity to win the NFT used as collateral
                 proportional to the capital they provided for that loan. If the loan is repaid, the lenders are
                 obviously returned the capital they invested. Those who also repay a loan are rewarded with an amount
                 equal to the interest paid to the protocol.
-            </h2>
+            </h3>
             <img src={logo} alt="MeltyFi protocol"/>
             <h1>How does it work?</h1>
-            <h2>
+            <h3>
                 MeltyFiNFT is the contract that runs the core functionality of the MeltyFi protocol. It manages the
                 creation, cancellation and conclusion of lotteries, as well as the sale and refund of WonkaBars for each
                 lottery, and also reward good users with ChocoChips. The contract allows users to create a lottery by
@@ -31,7 +31,7 @@ function Home() {
                 the prize NFT. Plus every wonkabar holder is rewarded with ChocoCips. If the lottery is cancelled by the
                 owner beafore the expiration date, the contract refunds WonkaBars holders with Ether of the lottery
                 owners. Plus every wonkabar holder is rewarded with ChocoCips.
-            </h2>
+            </h3>
         </Container>
     );
 }
