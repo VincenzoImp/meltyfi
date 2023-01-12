@@ -172,13 +172,13 @@ function getAppliedCards(lotteries, address) {
             fourth_line = <li>Win percentage: {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
         } else {
             let receive;
-            if (data === 1) {
-                receive = "Refund and Choc";
+            if (data.state === 1) {
+                receive = "Refund and CHOC";
             } else {
                 if (data.winner === address) {
-                    receive = "Prize and Choc";
+                    receive = "Prize and CHOC";
                 } else {
-                    receive = "Choc";
+                    receive = "CHOC";
                 }
             }
             fourth_line = <li>You will receive: {receive}</li>
