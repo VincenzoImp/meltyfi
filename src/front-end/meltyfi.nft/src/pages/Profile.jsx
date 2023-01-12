@@ -1,12 +1,12 @@
-import { Card, Col, Container, Row } from "react-bootstrap";
-import { useAddress } from "@thirdweb-dev/react";
+import {Card, Col, Container, Row} from "react-bootstrap";
+import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import ChocoChip from "../ABIs/ChocoChip.json";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
-import { addressMeltyFiNFT, sdk } from "../App";
+import {addressMeltyFiNFT, sdk} from "../App";
 import Button from "react-bootstrap/Button";
-import { ethers } from "ethers";
+import {ethers} from "ethers";
 
 
 async function asyncFilter(arr, predicate) {
@@ -124,7 +124,7 @@ function getOwnedCards(lotteries) {
                         meltyfi = meltyfi.connect(signer);
                         const response = await meltyfi.repayLoan(
                             data.lottery,
-                            { value: ethers.utils.parseEther(toRepayETH.toString()) }
+                            {value: ethers.utils.parseEther(toRepayETH.toString())}
                         );
                         console.log("response", response);
                     }
@@ -136,24 +136,61 @@ function getOwnedCards(lotteries) {
     });
 }
 
-function getAppliedCards(lotteries) {
+function getAppliedCards(lotteries, address) {
     return lotteries.map((data) => {
-        let text, action;
+        let first_line,
+            second_line,
+            third_line,
+            fourth_line;
+
+        let state;
         if (data.state === 0) {
-            text = <Card.Text>
-                <li>Expire date: {data.expirationDate.toLocaleString()}</li>
-                <li>Wonka Bars owned: {data.wonkaBarsOwned} ({data.wonkaBarsOwned / data.wonkaBarsMaxSupply * 100}%)
-                </li>
-                <li>Wonka Bars
-                    sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ({data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
-                </li>
-            </Card.Text>
+            state = "Active";
+        } else if (data.state === 1) {
+            state = "Canceled";
+        } else {
+            state = "Concluded";
+        }
+        first_line = <li>State: {state}</li>
+
+        second_line = <li>Expire date: {data.expirationDate.toLocaleString()}</li>
+
+        if (data.state === 0) {
+            third_line = <li>WonkaBars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+        } else {
+            let winner;
+            if (data.state === 1) {
+                winner = "None";
+            } else {
+                const url = `https://goerli.etherscan.io/address/${data.winner}`;
+                winner = <a href={url}>{data.winner.slice(0, 6)}...{data.winner.slice(-4)}</a>;
+            }
+            third_line = <li>Winner: {winner}</li>
+        }
+
+        if (data.state === 0) {
+            fourth_line = <li>Win percentage: {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+        } else {
+            let receive;
+            if (data === 1) {
+                receive = "Refund and Choc";
+            } else {
+                if (data.winner === address) {
+                    receive = "Prize and Choc";
+                } else {
+                    receive = "Choc";
+                }
+            }
+            fourth_line = <li>You will receive: {receive}</li>
+        }
+
+        let action;
+        if (data.state === 0) {
             action = <Button className='CardButton' disabled={true} onClick={() => {
             }}>
                 Melt {data.wonkaBarsOwned} WonkaBars
             </Button>
         } else {
-            let state, winner, receive;
             action = <Button className='CardButton' onClick={async () => {
                 const provider = new ethers.providers.Web3Provider(window.ethereum)
                 await provider.send("eth_requestAccounts", []);
@@ -165,25 +202,13 @@ function getAppliedCards(lotteries) {
             }}>
                 Melt {data.wonkaBarsOwned} WonkaBars
             </Button>;
-            if (data.state === 1) {
-                state = "Canceled";
-                winner = <li>No winner</li>;
-                receive = "refund and ChocoChips";
-            } else {
-                state = "Concluded";
-                const url = `https://goerli.etherscan.io/address/${data.winner}`;
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                winner = <li>Winner: <a href={url}>{data.winner.slice(0, 6)}...{data.winner.slice(-4)}</a></li>;
-                receive = "ChocoChips";
-            }
-            text = <Card.Text>
-                <li>State: {state}</li>
-                {winner}
-                <li>Wonka Bars owned: {data.wonkaBarsOwned}</li>
-                <li>Wonka Bars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
-                <li>You will receive: {receive}</li>
-            </Card.Text>
         }
+        const text = <Card.Text>
+            {first_line}
+            {second_line}
+            {third_line}
+            {fourth_line}
+        </Card.Text>
         return <Col>
             {LotteryCard({
                 src: data.image,
@@ -209,13 +234,14 @@ function Profile() {
     if (address !== undefined) {
         profileSection = <Container>
             <h3 align="right">ChocoChips: {chocoChips}</h3>
-            <h2>Your lotteries</h2>
+            <h2>Your active lotteries</h2>
             <Row>{getOwnedCards(owned)}</Row>
             <h2>Your WonkaBars</h2>
-            <Row>{getAppliedCards(applied)}</Row>
+            <Row>{getAppliedCards(applied, address)}</Row>
         </Container>;
     } else {
-        profileSection = <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1> </Container>
+        profileSection =
+            <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></Container>
     }
     return profileSection;
 }
