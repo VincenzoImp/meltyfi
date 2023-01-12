@@ -55,7 +55,7 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
     const [duration, setDuration] = useState(0);
   
     const handleDurationChange = (event) => {
-      const input = parseInt(event.target.value) * 86400;
+      const input = parseInt(event.target.value);
       if(isNaN(input) || input <= 0){
         setDuration(0);
       }else {
@@ -65,15 +65,18 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
 
     const handleWonkaBarMaxSupply = (event) => {
         const input = parseInt(event.target.value);
-        if(isNaN(input) || input <= 0){
+        if(isNaN(input) || input <= 4){
             setWonkaBarMaxSupply(5);
-        }else {
+        }
+        else if (input >100){
+          setWonkaBarMaxSupply(100);
+        }
+        else {
             setWonkaBarMaxSupply(input);
         }
       };
   
       const handleWonkaBarPrice = (event) => {
-
         const input = parseInt(event.target.value);
         if(isNaN(input) || input <= 0){
             setWonkaBarPrice(1);
@@ -111,7 +114,7 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
           </Card>
           <Form>
               <Form.Group className="mb-3" controlId="createLotteryForm.ControlInput1">
-                <Form.Label>Price of a wonka bar (ETH)</Form.Label>
+                <Form.Label>Price of a wonka bar (wei)</Form.Label>
                 <Form.Control
                   type="number"
                   autoFocus
@@ -131,7 +134,7 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
                 />
               </Form.Group>
               <Form.Group className="mb-3" controlId="createLotteryForm.ControlInput3">
-                <Form.Label>Duration (days)</Form.Label>
+                <Form.Label>Duration (seconds)</Form.Label>
                 <Form.Control
                   type="number"
                   placeholder="1000"
@@ -141,7 +144,7 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
                 />
               </Form.Group>
             </Form>
-            <p>Total revenue: {wonkaBarMaxSupply * wonkaBarPrice}  ethers</p>
+            <p>Total revenue: {wonkaBarMaxSupply * wonkaBarPrice}  wei</p>
             <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
             <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
             <p>Please try again.</p>

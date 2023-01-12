@@ -70,7 +70,7 @@ function RenderLotteries() {
             <li> Sold WonkaBars: {lottery.wonkaBarsSold} out of {lottery.wonkaBarsMaxSupply}</li>
             </p> ;
         const buyWonkaBar = <BuyWonkaBar nftImg={lottery.image} tokenId={lottery.prizeTokenId} collection={lottery.collection} 
-                         lotteryId ={lottery.lotteryId} expirationDate = {dateString} wonkaBarPrice={parseInt(lottery.wonkaBarPrice)}/>;
+                         lotteryId ={lottery.lotteryId} expirationDate = {dateString} wonkaBarPrice={lottery.wonkaBarPrice}/>;
         return <Col>
             {LotteryCard({
                 src: lottery.image,
