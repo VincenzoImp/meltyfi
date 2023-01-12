@@ -17,8 +17,8 @@
         "type": "address"
       },
       {
-        "internalType": "contract VRFv2Consumer",
-        "name": "contractVRFv2Consumer",
+        "internalType": "contract VRFv2DirectFundingConsumer",
+        "name": "contractVRFv2DirectFundingConsumer",
         "type": "address"
       }
     ],
@@ -209,6 +209,19 @@
   {
     "inputs": [],
     "name": "addressMeltyFiDAO",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "addressVRFv2DirectFundingConsumer",
     "outputs": [
       {
         "internalType": "address",
@@ -508,158 +521,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryExpirationDate",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryOwner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryPrizeContract",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryPrizeTokenId",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryState",
-    "outputs": [
-      {
-        "internalType": "enum MeltyFiNFT.lotteryState",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryWonkaBarPrice",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryWonkaBarsMaxSupply",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getLotteryWonkaBarsSold",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getRoyaltyDAOPercentage",
     "outputs": [
@@ -706,25 +567,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "lotteryId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getWinner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
