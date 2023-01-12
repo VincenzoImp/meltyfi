@@ -14,10 +14,6 @@ async function asyncFilter(arr, predicate) {
     return arr.filter((_v, index) => results[index]);
 }
 
-// async function asyncMap(arr, predicate) {
-//     return await Promise.all(arr.map(predicate));
-// }
-
 async function loadLotteries(meltyfi, address) {
     let [owned, applied] = await Promise.all([
         asyncFilter(
