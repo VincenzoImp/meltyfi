@@ -1,11 +1,14 @@
 import LotteryCard from '../components/lotteryCard.jsx';
 import { Container, Row, Col, Button } from 'react-bootstrap';
-import {ThirdwebSDK} from "@thirdweb-dev/sdk";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 import {addressMeltyFiNFT, sdk} from "../App";
 import BuyWonkaBar from '../components/buyWonkaBar.jsx';
+import NftCard from '../components/nftCard.jsx';
+import CreateLottery from '../components/createLottery';
 import {ethers} from "ethers";
+import axios from 'axios';
+
 
 
 async function getLotteryInfo(meltyfi, lottery) {
@@ -39,7 +42,6 @@ async function getLotteryInfo(meltyfi, lottery) {
 
 
 async function getLotteries(){
-    
     const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
     const lotteriesId = await meltyfi.call("activeLotteryIds");
     const lotteries = new Array();
@@ -49,7 +51,6 @@ async function getLotteries(){
         lotteries.push(lotteryInfo);
     }
     return lotteries;
-
 }
 
 
@@ -83,6 +84,59 @@ function RenderLotteries() {
 }
 
 
+async function getNFTs(){
+
+    async function getAssets() {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner()
+            const address = await signer.getAddress()
+            const response = await axios.get('https://testnets-api.opensea.io/api/v1/assets?format=json&owner='+address);
+            const assets = response.data.assets;
+            return assets;
+        } catch (error) {
+          console.error(error);
+        }
+    }
+
+    let nfts = await getAssets();
+    let nftsInfo = [];
+
+    for (const nft of nfts){
+        if (nft.asset_contract.schema_name == "ERC721"){
+            const image = nft.image_url;
+            const collection = nft.asset_contract.name;
+            const tokenId = nft.token_id;
+            const contract = nft.asset_contract.address;
+            const nftInfo = {image, collection, tokenId, contract}
+            nftsInfo.push(nftInfo);
+        }
+      }
+
+    return nftsInfo;
+}
+
+function RenderNFTs(){
+    const [nfts, setNfts] = useState([]);
+    useEffect(() => {
+        getNFTs().then(setNfts)
+    }, []);
+
+    return nfts.map((nft) => {
+        const createLottery = <CreateLottery nftImg={nft.image} tokenId={nft.tokenId} collection={nft.collection} contract={nft.contract}/>;
+        return <Col>
+            {NftCard({
+                src: nft.image,
+                tokenId: nft.prizeTokenId,
+                collection: nft.collection,
+                action: createLottery
+            })}
+        </Col>
+    });
+}
+
+
 function Lotteries() {
     const [state, setState] = useState("Create Lotteries");
 
@@ -96,7 +150,10 @@ function Lotteries() {
             <Button variant="primary" onClick={handleClick}>
             {state}
             </Button>
-        </Container>);
+            <Row>
+                <RenderLotteries/>
+            </Row>
+    </Container>);
   }
   if (state == "Create Lotteries"){
     return (
@@ -105,7 +162,7 @@ function Lotteries() {
             {state}
             </Button>
             <Row>
-                <RenderLotteries/>
+                <RenderNFTs/>
             </Row>
         </Container>
     );

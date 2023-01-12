@@ -10,16 +10,17 @@ import { Alert } from 'react-bootstrap';
 
 
 async function buyWonkaBars(wonkaBarPrice, lotteryId) {
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  await provider.send("eth_requestAccounts", []);
-  const signer = provider.getSigner();
-  let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-  meltyfi = meltyfi.connect(signer);
+
   try{
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    await provider.send("eth_requestAccounts", []);
+    const signer = provider.getSigner();
+    let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
+    meltyfi = meltyfi.connect(signer);
     const response = await meltyfi.buyWonkaBars(lotteryId, wonkaBarPrice);
   }
  catch (err) {
-  return err;
+  return err.name;
 }
   return 0;
 }
