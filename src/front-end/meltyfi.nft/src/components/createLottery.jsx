@@ -50,8 +50,8 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
   function CreateLottery(props) {
     const [show, setShow] = useState(false);
     const [showAlert, setShowAlert] = useState(false);
-    const [wonkaBarPrice, setWonkaBarPrice] = useState(0);
-    const [wonkaBarMaxSupply, setWonkaBarMaxSupply] = useState(0);
+    const [wonkaBarPrice, setWonkaBarPrice] = useState(1);
+    const [wonkaBarMaxSupply, setWonkaBarMaxSupply] = useState(5);
     const [duration, setDuration] = useState(0);
   
     const handleDurationChange = (event) => {
@@ -66,16 +66,17 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
     const handleWonkaBarMaxSupply = (event) => {
         const input = parseInt(event.target.value);
         if(isNaN(input) || input <= 0){
-            setWonkaBarMaxSupply(0);
+            setWonkaBarMaxSupply(5);
         }else {
             setWonkaBarMaxSupply(input);
         }
       };
   
       const handleWonkaBarPrice = (event) => {
-        const input = ethers.utils.parseEther(event.target.value);
+
+        const input = parseInt(event.target.value);
         if(isNaN(input) || input <= 0){
-            setWonkaBarPrice(0);
+            setWonkaBarPrice(1);
         }else {
             setWonkaBarPrice(input);
         }
@@ -102,7 +103,7 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
         </Button>
         <Modal show={show} onHide={handleClose}>
           <Modal.Header closeButton>
-            <Modal.Title>Create Lottery for {props.tokenId}@{props.collection} </Modal.Title>
+            <Modal.Title>Create Lottery for {props.collection} #{props.tokenId} </Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Card className='Card'>
@@ -110,12 +111,12 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
           </Card>
           <Form>
               <Form.Group className="mb-3" controlId="createLotteryForm.ControlInput1">
-                <Form.Label>Price of a wonka bar (ethers)</Form.Label>
+                <Form.Label>Price of a wonka bar (ETH)</Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="0.04"
                   autoFocus
-                  step="0.001"
+                  value = {wonkaBarPrice}
+                  step="1"
                   onChange={handleWonkaBarPrice}
                 />
               </Form.Group>
@@ -123,7 +124,8 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
                 <Form.Label>WonkaBar max supply</Form.Label>
                 <Form.Control
                   type="number"
-                  placeholder="100"
+                  placeholder="40"
+                  value = {wonkaBarMaxSupply}
                   autoFocus
                   onChange={handleWonkaBarMaxSupply}
                 />
@@ -134,11 +136,12 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
                   type="number"
                   placeholder="1000"
                   autoFocus
+                  value = {duration}
                   onChange={handleDurationChange}
                 />
               </Form.Group>
             </Form>
-            <p>Total revenue: {(ethers.utils.formatEther((ethers.BigNumber.from(wonkaBarPrice))) ) * parseInt(wonkaBarMaxSupply)}  ethers</p>
+            <p>Total revenue: {wonkaBarMaxSupply * wonkaBarPrice}  ethers</p>
             <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
             <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
             <p>Please try again.</p>

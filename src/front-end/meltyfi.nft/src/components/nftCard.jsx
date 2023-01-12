@@ -7,7 +7,7 @@ function NftCard({src, tokenId, collection, action}) {
             <Card.Img className='CardImg' src={src}/>
             <Card.Body className='CardBody'>
                 <Card.Title className='CardTitle'>
-                    {tokenId} @ {collection}
+                    {collection} #{tokenId}
                 </Card.Title>
                 {action}
             </Card.Body>

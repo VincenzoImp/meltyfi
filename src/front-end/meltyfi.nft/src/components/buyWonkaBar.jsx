@@ -28,12 +28,12 @@ async function buyWonkaBars(wonkaBarPrice, lotteryId) {
 function BuyWonkaBar(props) {
   const [show, setShow] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
-  const [wonkaBarQuantity, setWonkaBarQuantity] = useState(0);
+  const [wonkaBarQuantity, setWonkaBarQuantity] = useState(1);
 
   const handleQuantityChange = (event) => {
     const input = parseInt(event.target.value);
     if(isNaN(input) || input <= 0){
-      setWonkaBarQuantity(0);
+      setWonkaBarQuantity(1);
     }else {
       setWonkaBarQuantity(input);
     }
@@ -59,11 +59,9 @@ function BuyWonkaBar(props) {
       </Button>
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Buy lottery#{props.lotteryId} WonkaBars</Modal.Title>
+          <Modal.Title>Buy {props.collection} #{props.tokenId} WonkaBars</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-            <li>Expiry date: {props.expirationDate}</li>
-            <li>{props.tokenId}@{props.collection}</li>
           <Card className='Card'>
             <Card.Img className='CardImg' src={props.nftImg}/>
         </Card>
@@ -72,7 +70,7 @@ function BuyWonkaBar(props) {
               <Form.Label>How many wonka bar you want to buy?</Form.Label>
               <Form.Control
                 type="number"
-                placeholder="4 wonkabar"
+                value={wonkaBarQuantity}
                 autoFocus
                 onChange={handleQuantityChange}
               />

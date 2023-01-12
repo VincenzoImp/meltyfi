@@ -1,5 +1,6 @@
 import LotteryCard from '../components/lotteryCard.jsx';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Button, Nav } from 'react-bootstrap';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import {useEffect, useState} from "react";
 import {addressMeltyFiNFT, sdk} from "../App";
@@ -138,40 +139,26 @@ function RenderNFTs(){
 
 
 function Lotteries() {
-    const [state, setState] = useState("Create Lotteries");
-    
-    useEffect(() => {
-        setState("Create Lotteries");
-        return () => setState("Create Lotteries")
-      }, []);
+    const [state, setState] = useState('browse');
 
-  const handleClick = () => {
-    setState(state == "Create Lotteries" ? "Browse Lotteries" : "Create Lotteries");
-  }
-
-  if (state == "Browse Lotteries"){
-    return (
-    <Container>
-            <Button variant="primary" onClick={handleClick}>
-            {state}
-            </Button>
-            <Row>
-                <RenderLotteries/>
-            </Row>
-    </Container>);
-  }
-  else if (state == "Create Lotteries"){
     return (
         <Container>
-            <Button variant="primary" onClick={handleClick}>
-            {state}
-            </Button>
+        <Row>
+        <ButtonGroup aria-label="Basic example">
+        <Button onClick={()=> setState("browse")}>
+            Browse Lotteries
+        </Button>
+        <Button onClick={()=> setState("create")}>
+            Create Lottery
+        </Button>
+        </ButtonGroup>
+        </Row>
             <Row>
-                <RenderNFTs/>
+            {state === "create" ? <h1>Create a lottery using your NFTs as collaterals</h1>: <h1>Buy wonka bars of some lottery</h1>}
+            {state === "create" ? <RenderNFTs/> : <RenderLotteries/>}
             </Row>
-        </Container>
-    );
-}
+    </Container>);
+  
 }
 
-export default Lotteries;
+export default Lotteries; 
