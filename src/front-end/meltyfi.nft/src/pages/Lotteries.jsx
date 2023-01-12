@@ -139,6 +139,11 @@ function RenderNFTs(){
 
 function Lotteries() {
     const [state, setState] = useState("Create Lotteries");
+    
+    useEffect(() => {
+        setState("Create Lotteries");
+        return () => setState("Create Lotteries")
+      }, []);
 
   const handleClick = () => {
     setState(state == "Create Lotteries" ? "Browse Lotteries" : "Create Lotteries");
@@ -155,7 +160,7 @@ function Lotteries() {
             </Row>
     </Container>);
   }
-  if (state == "Create Lotteries"){
+  else if (state == "Create Lotteries"){
     return (
         <Container>
             <Button variant="primary" onClick={handleClick}>
