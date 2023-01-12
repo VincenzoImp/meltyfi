@@ -100,7 +100,7 @@
 }
 
 .PleaseLogin {
-    min-height: 60vh;
     text-align: center;
-    padding: 100px;
+    margin-top: 16rem;
+    margin-bottom: 16rem;
 }

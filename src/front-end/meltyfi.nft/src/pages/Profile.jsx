@@ -1,12 +1,12 @@
-import {Card, Col, Container, Row} from "react-bootstrap";
-import {useAddress} from "@thirdweb-dev/react";
+import { Card, Col, Container, Row } from "react-bootstrap";
+import { useAddress } from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import ChocoChip from "../ABIs/ChocoChip.json";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import LotteryCard from "../components/lotteryCard";
-import {addressMeltyFiNFT, sdk} from "../App";
+import { addressMeltyFiNFT, sdk } from "../App";
 import Button from "react-bootstrap/Button";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 
 
 async function asyncFilter(arr, predicate) {
@@ -124,7 +124,7 @@ function getOwnedCards(lotteries) {
                         meltyfi = meltyfi.connect(signer);
                         const response = await meltyfi.repayLoan(
                             data.lottery,
-                            {value: ethers.utils.parseEther(toRepayETH.toString())}
+                            { value: ethers.utils.parseEther(toRepayETH.toString()) }
                         );
                         console.log("response", response);
                     }
@@ -215,7 +215,7 @@ function Profile() {
             <Row>{getAppliedCards(applied)}</Row>
         </Container>;
     } else {
-        profileSection = <div className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></div>
+        profileSection = <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1> </Container>
     }
     return profileSection;
 }
