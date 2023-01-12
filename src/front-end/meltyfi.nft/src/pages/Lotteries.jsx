@@ -128,7 +128,7 @@ function RenderNFTs(){
         return <Col>
             {NftCard({
                 src: nft.image,
-                tokenId: nft.prizeTokenId,
+                tokenId: nft.tokenId,
                 collection: nft.collection,
                 action: createLottery
             })}
