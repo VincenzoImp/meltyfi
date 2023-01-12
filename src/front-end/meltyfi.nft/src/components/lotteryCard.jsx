@@ -7,7 +7,7 @@ function LotteryCard({src, tokenId, collection, text, lotteryId, action}) {
             <Card.Img className='CardImg' src={src}/>
             <Card.Body className='CardBody'>
                 <Card.Title className='CardTitle'>
-                    {tokenId} @ {collection}
+                    {collection} #{tokenId}
                 </Card.Title>
                 <Card.Text>
                     Lottery #{lotteryId}
