@@ -73,8 +73,8 @@ function BuyWonkaBar(props) {
 		const input = parseInt(event.target.value);
 		if (isNaN(input) || input <= 0) {
 			setWonkaBarQuantity(1);
-		} else if (input > parseInt(maxAmountToBuy)-1) {
-			setWonkaBarQuantity(parseInt(maxAmountToBuy)-1);
+		} else if (input > parseInt(maxAmountToBuy)) {
+			setWonkaBarQuantity(parseInt(maxAmountToBuy));
 		} else {
 			setWonkaBarQuantity(input);
 		}
