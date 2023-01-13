@@ -128,7 +128,7 @@ function getOwnedCards(lotteries) {
                         console.log("response", response);
                     }
                 }>
-                    Repay Loan
+                Repay Loan
                 </Button>
             })}
         </Col>
@@ -169,7 +169,7 @@ function getAppliedCards(lotteries, address) {
         }
 
         if (data.state === 0) {
-            fourth_line = <li className="NoDot"><b>Win percentage:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+            fourth_line = <li className="NoDot"><b>Win probability:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
         } else {
             let receive;
             if (data.state === 1) {
