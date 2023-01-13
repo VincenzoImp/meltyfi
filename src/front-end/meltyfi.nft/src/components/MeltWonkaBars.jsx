@@ -31,7 +31,8 @@ function MeltWonkaBars({disabled, wonkaBarsOwned, lottery}) {
         <Button className="CardButton" disabled={disabled} onClick={onClick}>
             Melt {wonkaBarsOwned} WonkaBars
         </Button>
-        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+        <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible
+               style={{marginTop: "1.4rem"}}>
             <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
             <p>Please try again.</p>
         </Alert>

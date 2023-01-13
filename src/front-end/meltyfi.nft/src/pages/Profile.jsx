@@ -173,7 +173,7 @@ function getAppliedCards(lotteries, address) {
 
         let action;
         if (data.state === 0) {
-            action = <MeltWonkaBars disabled={true} wonkaBarsOwned={data.wonkaBarsOwned}/>
+            action = <MeltWonkaBars disabled={true} wonkaBarsOwned={data.wonkaBarsOwned} lottery={data.lottery}/>
         } else {
             action = <MeltWonkaBars disabled={false} wonkaBarsOwned={data.wonkaBarsOwned} lottery={data.lottery}/>
         }
