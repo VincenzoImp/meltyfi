@@ -7,6 +7,8 @@ import { ethers } from "ethers";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import { addressMeltyFiNFT } from "../App";
 import { Alert, Container, Row, Col } from 'react-bootstrap';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBarPrice, wonkaBarsMaxSupply) {
 	const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -52,16 +54,7 @@ function CreateLottery(props) {
 	const [showAlert, setShowAlert] = useState(false);
 	const [wonkaBarPrice, setWonkaBarPrice] = useState(1);
 	const [wonkaBarMaxSupply, setWonkaBarMaxSupply] = useState(5);
-	const [duration, setDuration] = useState(0);
-
-	const handleDurationChange = (event) => {
-		const input = event.target.value - Math.floor(Date.now() / 1000);
-		if (isNaN(input) || input <= 0) {
-			setDuration(0);
-		} else {
-			setDuration(input);
-		}
-	};
+	const [expiration, setExpirationDate] = useState(null);
 
 	const handleWonkaBarMaxSupply = (event) => {
 		const input = parseInt(event.target.value);
@@ -69,6 +62,7 @@ function CreateLottery(props) {
 			setWonkaBarMaxSupply(5);
 		}
 		else if (input > 100) {
+			//pensa io che stronzo che ho programmato le call nel contract e nessuno le usa, giustamente e' piu' comodo spiaccicare in chiaro la costante, ma va bene lo stessoooooo
 			setWonkaBarMaxSupply(100);
 		}
 		else {
@@ -85,10 +79,10 @@ function CreateLottery(props) {
 		}
 	};
 
-
 	const handleShow = () => setShow(true);
 	const handleClose = () => setShow(false);
 	const handleBuy = async () => {
+		const duration = (expiration.getMilliseconds() - Date.now().getMilliseconds()) / 1000;
 		const result = await callCreateLottery(duration, props.contract, props.tokenId, wonkaBarPrice, wonkaBarMaxSupply);
 		if (result === 0) {
 			setShow(false);
@@ -154,12 +148,10 @@ function CreateLottery(props) {
 									<Form.Label className='pt-2'>Select expiration day</Form.Label>
 								</Col>
 								<Col>
-									<Form.Control
-										type="date"
-										name="dob"
-										autoFocus
-										value={duration}
-										onChange={handleDurationChange}
+									<DatePicker
+										selected={expiration}
+										onChange={(date) => setExpirationDate(date)}
+										minDate={new Date()}
 										className='BgColor2 TextColor1'
 									/>
 								</Col>

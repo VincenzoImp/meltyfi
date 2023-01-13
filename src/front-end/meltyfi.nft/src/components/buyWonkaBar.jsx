@@ -5,8 +5,9 @@ import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import { ethers } from "ethers";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
-import { addressMeltyFiNFT } from "../App";
+import { addressMeltyFiNFT, sdk } from "../App";
 import { Alert, Row, Col, Container } from 'react-bootstrap';
+import { useAddress } from "@thirdweb-dev/react";
 
 
 async function buyWonkaBars(wonkaBarPrice, lotteryId) {
@@ -30,11 +31,26 @@ function BuyWonkaBar(props) {
 	const [showAlert, setShowAlert] = useState(false);
 	const [wonkaBarQuantity, setWonkaBarQuantity] = useState(1);
 
+	/** 
+	const meltyfi = async () => { await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT) };
+	const [, , , , , , , wonkaBarsSold, wonkaBarsMaxSupply,] = async () => {
+		await meltyfi.call(
+			"getLottery", props.lotteryId)
+	};
+	const address = useAddress();
+	const maxPercentage = async () => { await meltyfi.call("getUpperLimitBalanceOfPercentage") };
+	const balance = async () => { await meltyfi.call("balanceOf", address) };
+	const maxForMe = wonkaBarsMaxSupply * maxPercentage / 100 - balance;
+	const maxAmountToBuy = Math.min(maxForMe, wonkaBarsMaxSupply - wonkaBarsSold);
+	*/
+
 	const handleQuantityChange = (event) => {
 		const input = parseInt(event.target.value);
 		if (isNaN(input) || input <= 0) {
 			setWonkaBarQuantity(1);
-		} else {
+		} else /**if (input > maxAmountToBuy) {
+			setWonkaBarQuantity(maxAmountToBuy);
+		} else */ {
 			setWonkaBarQuantity(input);
 		}
 	};

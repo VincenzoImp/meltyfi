@@ -12,6 +12,7 @@ import axios from 'axios';
 
 
 async function getLotteryInfo(meltyfi, lottery) {
+
     let lotteryId = parseInt(lottery);
     let [expirationDate, , , prizeContract, prizeTokenId, , , wonkaBarsSold, wonkaBarsMaxSupply, wonkaBarPrice] = await meltyfi.call(
         "getLottery", lotteryId);
@@ -36,7 +37,7 @@ async function getLotteryInfo(meltyfi, lottery) {
         expirationDate,
         wonkaBarsMaxSupply,
         wonkaBarsSold,
-        wonkaBarPrice
+        wonkaBarPrice,
     };
 }
 
