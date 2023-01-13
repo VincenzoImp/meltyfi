@@ -23,10 +23,10 @@ async function getMaxAmountToBuy(lotteryId){
 	const maxForMe = wonkaBarsMaxSupply * maxPercentage / 100 - balance;
 	const maxAmountToBuy = Math.min(maxForMe, wonkaBarsMaxSupply - wonkaBarsSold);
   return maxAmountToBuy;
-  
+
 }
 
-async function buyWonkaBars(wonkaBarPrice, lotteryId) {
+async function buyWonkaBars(totalPrice, lotteryId) {
 
 	try {
 		const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -34,7 +34,7 @@ async function buyWonkaBars(wonkaBarPrice, lotteryId) {
 		const signer = provider.getSigner();
 		let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
 		meltyfi = meltyfi.connect(signer);
-		await meltyfi.buyWonkaBars(lotteryId, wonkaBarPrice);
+		await meltyfi.buyWonkaBars(lotteryId, parseInt(totalPrice));
 	}
 	catch (err) {
 		return err.name;
@@ -68,7 +68,11 @@ function BuyWonkaBar(props) {
 	const handleShow = () => setShow(true);
 	const handleClose = () => setShow(false);
 	const handleBuy = async () => {
-		const result = await buyWonkaBars(props.wonkaBarPrice * wonkaBarQuantity, props.lotteryId);
+
+    const wonkaBarWeiPrice = ethers.utils.parseUnits(props.wonkaBarPrice, "ether");
+    const totalPrice = wonkaBarWeiPrice * wonkaBarQuantity;
+    console.log(totalPrice);
+		const result = await buyWonkaBars(totalPrice, props.lotteryId);
 		if (result === 0) {
 			setShow(false);
 		}

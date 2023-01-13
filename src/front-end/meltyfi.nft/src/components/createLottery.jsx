@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Card from 'react-bootstrap/Card';
 import { ethers } from "ethers";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
-import { addressMeltyFiNFT } from "../App";
+import { addressMeltyFiNFT, sdk } from "../App";
 import { Alert, Container, Row, Col } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+async function getUpperLimitSupply(){
+  const meltyfi = await sdk.getContract(addressMeltyFiNFT, MeltyFiNFT);
+	const upperLimit = await meltyfi.call("getUpperLimitMaxSupply");
+  return upperLimit;
+}
 
 async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBarPrice, wonkaBarsMaxSupply) {
 	const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -25,11 +31,6 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
 		"type": "function"
 	}], provider);
 	const contractWithSigner = contractApprove.connect(signer);
-
-
-	/*contract.on("approvedNFT", (event) => {
-	//actually create the lottery ;
-  });*/
 
 	let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
 	meltyfi = meltyfi.connect(signer);
@@ -55,15 +56,20 @@ function CreateLottery(props) {
 	const [wonkaBarPrice, setWonkaBarPrice] = useState(1);
 	const [wonkaBarMaxSupply, setWonkaBarMaxSupply] = useState(5);
 	const [expiration, setExpirationDate] = useState(null);
+  const [upperLimitSupply, setUpperLimitSupply] = useState(0);
+  
+  useEffect(() => {
+    getUpperLimitSupply().then(setUpperLimitSupply)
+  }, []);
 
 	const handleWonkaBarMaxSupply = (event) => {
 		const input = parseInt(event.target.value);
 		if (isNaN(input) || input <= 4) {
 			setWonkaBarMaxSupply(5);
 		}
-		else if (input > 100) {
+		else if (input > upperLimitSupply) {
 			//pensa io che stronzo che ho programmato le call nel contract e nessuno le usa, giustamente e' piu' comodo spiaccicare in chiaro la costante, ma va bene lo stessoooooo
-			setWonkaBarMaxSupply(100);
+			setWonkaBarMaxSupply(upperLimitSupply);
 		}
 		else {
 			setWonkaBarMaxSupply(input);
@@ -82,8 +88,10 @@ function CreateLottery(props) {
 	const handleShow = () => setShow(true);
 	const handleClose = () => setShow(false);
 	const handleBuy = async () => {
-		const duration = (expiration.getMilliseconds() - Date.now().getMilliseconds()) / 1000;
+    let now = new Date(); 
+    const duration = parseInt(((expiration.getTime() - (now.getTime())) / 1000));
 		const result = await callCreateLottery(duration, props.contract, props.tokenId, wonkaBarPrice, wonkaBarMaxSupply);
+
 		if (result === 0) {
 			setShow(false);
 		}
@@ -91,6 +99,7 @@ function CreateLottery(props) {
 			setShowAlert(true);
 			console.log(result);
 		}
+
 	};
 
 	return (
