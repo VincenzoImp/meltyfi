@@ -27,7 +27,7 @@ async function getLotteryInfo(meltyfi, lottery) {
     expirationDate = new Date(Number(expirationDate) * 1000);
     wonkaBarsMaxSupply = Number(wonkaBarsMaxSupply);
     wonkaBarsSold = Number(wonkaBarsSold);
-    wonkaBarPrice = ethers.utils.formatEther(parseInt(wonkaBarPrice));
+    wonkaBarPrice = ethers.utils.formatEther(wonkaBarPrice);
     return {
         lotteryId,
         name: nft.metadata.name,
