@@ -123,7 +123,6 @@ function getOwnedCards(lotteries) {
 }
 
 function getAppliedCards(lotteries, address) {
-    // const [showAlert, setShowAlert] = useState(false);
     const cards = lotteries.map((data) => {
         let first_line,
             second_line,
@@ -157,8 +156,7 @@ function getAppliedCards(lotteries, address) {
         }
 
         if (data.state === 0) {
-            fourth_line =
-                <li className="NoDot"><b>Win percentage:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+            fourth_line = <li className="NoDot"><b>Win probability:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
         } else {
             let receive;
             if (data.state === 1) {
