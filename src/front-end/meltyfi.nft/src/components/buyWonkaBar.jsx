@@ -132,7 +132,7 @@ function BuyWonkaBar(props) {
 					</Form>
           <div className='pt-2'>Prize contract: <a href={urlOwner}>{addressOwner.slice(0, 6)}...{addressOwner.slice(-4)}</a></div>
           <div className='pt-2'>Lottery owner: <a href={urlContract}>{props.contract.slice(0, 6)}...{props.contract.slice(-4)}</a> </div>
-					<div className='pt-2'>Total cost: {props.wonkaBarPrice * wonkaBarQuantity} ETH ({props.wonkaBarPrice.toString()} ETH per wonkabar)</div>
+					<div className='pt-2'>Total cost: {props.wonkaBarPrice * wonkaBarQuantity} ETH ({props.wonkaBarPrice.toString()} ETH per WonkaBar)</div>
 					<Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
 						<Alert.Heading>Oh snap! You got an error!</Alert.Heading>
 						<p>Please try again.</p>
