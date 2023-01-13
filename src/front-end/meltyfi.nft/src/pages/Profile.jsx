@@ -171,22 +171,9 @@ function getAppliedCards(lotteries, address) {
 
         let action;
         if (data.state === 0) {
-            action = <Button className='CardButton' disabled={true} onClick={() => {
-            }}>
-                Melt {data.wonkaBarsOwned} WonkaBars
-            </Button>
+            action = <MeltWonkaBars disabled={true} wonkaBarsOwned={data.wonkaBarsOwned}/>
         } else {
-            action = <Button className='CardButton' onClick={async () => {
-                const provider = new ethers.providers.Web3Provider(window.ethereum)
-                await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
-                let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-                meltyfi = meltyfi.connect(signer);
-                const response = await meltyfi.meltWonkaBars(data.lottery, data.wonkaBarsOwned);
-                console.log("response", response);
-            }}>
-                Melt {data.wonkaBarsOwned} WonkaBars
-            </Button>;
+            action = <MeltWonkaBars disabled={false} wonkaBarsOwned={data.wonkaBarsOwned} lottery={data.lottery}/>
         }
         const text = <Card.Text>
             {first_line}
