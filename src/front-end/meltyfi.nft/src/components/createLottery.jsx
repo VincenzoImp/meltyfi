@@ -68,7 +68,6 @@ function CreateLottery(props) {
 			setWonkaBarMaxSupply(5);
 		}
 		else if (input > upperLimitSupply) {
-			//pensa io che stronzo che ho programmato le call nel contract e nessuno le usa, giustamente e' piu' comodo spiaccicare in chiaro la costante, ma va bene lo stessoooooo
 			setWonkaBarMaxSupply(upperLimitSupply);
 		}
 		else {

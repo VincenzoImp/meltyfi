@@ -49,7 +49,11 @@ async function getLotteries() {
 
     for (const lottery of lotteriesId) {
         const lotteryInfo = await getLotteryInfo(meltyfi, lottery);
-        lotteries.push(lotteryInfo);
+        const now = new Date();
+        if (lotteryInfo.expirationDate > now ){
+            lotteries.push(lotteryInfo);
+        }
+        
     }
     return lotteries;
 }
