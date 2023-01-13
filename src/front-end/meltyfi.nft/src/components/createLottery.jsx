@@ -37,8 +37,9 @@ async function callCreateLottery(duration, prizeContract, prizeTokenId, wonkaBar
 	try {
 		const approveResponse = await contractWithSigner.approve(addressMeltyFiNFT, prizeTokenId);
 		const receipt = await provider.waitForTransaction(approveResponse.hash);
+    const safePrice = ethers.utils.parseEther(wonkaBarPrice.toString());
 		if (receipt.status) {
-			await meltyfi.createLottery(duration, prizeContract, prizeTokenId, wonkaBarPrice, wonkaBarsMaxSupply);
+			await meltyfi.createLottery(duration, prizeContract, prizeTokenId, safePrice , wonkaBarsMaxSupply);
 		} else {
 			console.log("Call failed!");
 		}
