@@ -1,12 +1,13 @@
-import { Card, Col, Container, Row } from "react-bootstrap";
-import { useAddress } from "@thirdweb-dev/react";
+import {Card, Col, Container, Row} from "react-bootstrap";
+import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import ChocoChip from "../ABIs/ChocoChip.json";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
-import { addressMeltyFiNFT, sdk } from "../App";
-import Button from "react-bootstrap/Button";
-import { ethers } from "ethers";
+import {addressMeltyFiNFT, sdk} from "../App";
+import {ethers} from "ethers";
+import MeltWonkaBars from "../components/MeltWonkaBars";
+import RepayLoan from "../components/RepayLoan";
 
 
 async function asyncFilter(arr, predicate) {
@@ -114,22 +115,7 @@ function getOwnedCards(lotteries) {
                 collection: data.collection,
                 text,
                 lotteryId: data.lottery,
-                action: <Button className='CardButton' onClick={
-                    async () => {
-                        const provider = new ethers.providers.Web3Provider(window.ethereum)
-                        await provider.send("eth_requestAccounts", []);
-                        const signer = provider.getSigner();
-                        let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-                        meltyfi = meltyfi.connect(signer);
-                        const response = await meltyfi.repayLoan(
-                            data.lottery,
-                            { value: ethers.utils.parseEther(toRepayETH.toString()) }
-                        );
-                        console.log("response", response);
-                    }
-                }>
-                Repay Loan
-                </Button>
+                action: <RepayLoan toRepayETH={toRepayETH} lottery={data.lottery}/>,
             })}
         </Col>
     });
@@ -156,7 +142,8 @@ function getAppliedCards(lotteries, address) {
         second_line = <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
 
         if (data.state === 0) {
-            third_line = <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+            third_line =
+                <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
         } else {
             let winner;
             if (data.state === 1) {
@@ -169,7 +156,8 @@ function getAppliedCards(lotteries, address) {
         }
 
         if (data.state === 0) {
-            fourth_line = <li className="NoDot"><b>Win probability:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+            const winProbability = data.wonkaBarsOwned / data.wonkaBarsSold * 100;
+            fourth_line = <li className="NoDot"><b>Win probability:</b> {winProbability}%</li>
         } else {
             let receive;
             if (data.state === 1) {
@@ -186,22 +174,9 @@ function getAppliedCards(lotteries, address) {
 
         let action;
         if (data.state === 0) {
-            action = <Button className='CardButton' disabled={true} onClick={() => {
-            }}>
-                Melt {data.wonkaBarsOwned} WonkaBars
-            </Button>
+            action = <MeltWonkaBars disabled={true} wonkaBarsOwned={data.wonkaBarsOwned} lottery={data.lottery}/>
         } else {
-            action = <Button className='CardButton' onClick={async () => {
-                const provider = new ethers.providers.Web3Provider(window.ethereum)
-                await provider.send("eth_requestAccounts", []);
-                const signer = provider.getSigner();
-                let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-                meltyfi = meltyfi.connect(signer);
-                const response = await meltyfi.meltWonkaBars(data.lottery, data.wonkaBarsOwned);
-                console.log("response", response);
-            }}>
-                Melt {data.wonkaBarsOwned} WonkaBars
-            </Button>;
+            action = <MeltWonkaBars disabled={false} wonkaBarsOwned={data.wonkaBarsOwned} lottery={data.lottery}/>
         }
         const text = <Card.Text>
             {first_line}
@@ -245,7 +220,7 @@ function Profile() {
             <Row>{getOwnedCards(owned)}</Row>
             <h2 align='center' className="pt-5">Your WonkaBars</h2>
             <Row>{getAppliedCards(applied, address)}</Row>
-        </Container >;
+        </Container>;
     } else {
         profileSection =
             <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></Container>
