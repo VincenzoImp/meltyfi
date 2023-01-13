@@ -114,22 +114,7 @@ function getOwnedCards(lotteries) {
                 collection: data.collection,
                 text,
                 lotteryId: data.lottery,
-                action: <Button className='CardButton' onClick={
-                    async () => {
-                        const provider = new ethers.providers.Web3Provider(window.ethereum)
-                        await provider.send("eth_requestAccounts", []);
-                        const signer = provider.getSigner();
-                        let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-                        meltyfi = meltyfi.connect(signer);
-                        const response = await meltyfi.repayLoan(
-                            data.lottery,
-                            { value: ethers.utils.parseEther(toRepayETH.toString()) }
-                        );
-                        console.log("response", response);
-                    }
-                }>
-                    Repay Loan
-                </Button>
+                action: <RepayLoan toRepayETH={toRepayETH} lottery={data.lottery}/>,
             })}
         </Col>
     });
