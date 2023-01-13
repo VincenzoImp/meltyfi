@@ -9,6 +9,15 @@ import { addressMeltyFiNFT, sdk } from "../App";
 import { Alert, Row, Col, Container } from 'react-bootstrap';
 
 
+async function getAddressOwner(){
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  await provider.send("eth_requestAccounts", []);
+  const signer = provider.getSigner()
+  const address = await signer.getAddress()
+  return address;
+}
+
 async function getMaxAmountToBuy(lotteryId){
 
   const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -26,7 +35,7 @@ async function getMaxAmountToBuy(lotteryId){
 
 }
 
-async function buyWonkaBars(wonkaBarPrice, lotteryId) {
+async function buyWonkaBars(wonkaBars, totalAmount, lotteryId) {
 
 	try {
 		const provider = new ethers.providers.Web3Provider(window.ethereum)
@@ -34,7 +43,9 @@ async function buyWonkaBars(wonkaBarPrice, lotteryId) {
 		const signer = provider.getSigner();
 		let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
 		meltyfi = meltyfi.connect(signer);
-		await meltyfi.buyWonkaBars(lotteryId, parseInt(wonkaBarPrice));
+    const stringAmount = totalAmount.toString();
+    const options = {value: stringAmount}
+		await meltyfi.buyWonkaBars(lotteryId, wonkaBars, options);
 	}
 	catch (err) {
 		return err.name;
@@ -47,19 +58,23 @@ function BuyWonkaBar(props) {
 	const [show, setShow] = useState(false);
 	const [showAlert, setShowAlert] = useState(false);
 	const [wonkaBarQuantity, setWonkaBarQuantity] = useState(1);
+  const [addressOwner, setAddressOwner] = useState("");
 
   const [maxAmountToBuy, setMaxAmountToBuy] = useState(0);
   useEffect(() => {
     getMaxAmountToBuy(props.lotteryId).then(setMaxAmountToBuy)
   }, []);
 
+  useEffect(() => {
+    getAddressOwner().then(setAddressOwner)
+  }, []);
 
 	const handleQuantityChange = (event) => {
 		const input = parseInt(event.target.value);
 		if (isNaN(input) || input <= 0) {
 			setWonkaBarQuantity(1);
-		} else if (input > parseInt(maxAmountToBuy)) {
-			setWonkaBarQuantity(parseInt(maxAmountToBuy));
+		} else if (input > parseInt(maxAmountToBuy)-1) {
+			setWonkaBarQuantity(parseInt(maxAmountToBuy)-1);
 		} else {
 			setWonkaBarQuantity(input);
 		}
@@ -68,8 +83,8 @@ function BuyWonkaBar(props) {
 	const handleShow = () => setShow(true);
 	const handleClose = () => setShow(false);
 	const handleBuy = async () => {
-
-		const result = await buyWonkaBars(props.wonkaBarPrice, props.lotteryId);
+    let amount = ethers.utils.parseUnits(props.wonkaBarPrice)*wonkaBarQuantity;
+		const result = await buyWonkaBars(wonkaBarQuantity, amount, props.lotteryId);
 		if (result === 0) {
 			setShow(false);
 		}
@@ -78,6 +93,9 @@ function BuyWonkaBar(props) {
 			console.log(result);
 		}
 	};
+
+  const urlOwner = `https://goerli.etherscan.io/address/${addressOwner}`;
+  const urlContract = `https://goerli.etherscan.io/address/${props.contract}`;
 
 	return (
 		<>
@@ -112,7 +130,9 @@ function BuyWonkaBar(props) {
 							</Row>
 						</Form.Group>
 					</Form>
-					<div className='pt-2'>Total cost: {props.wonkaBarPrice * wonkaBarQuantity} ETH</div>
+          <div className='pt-2'>Prize contract: <a href={urlOwner}>{addressOwner.slice(0, 6)}...{addressOwner.slice(-4)}</a></div>
+          <div className='pt-2'>Lottery owner: <a href={urlContract}>{props.contract.slice(0, 6)}...{props.contract.slice(-4)}</a> </div>
+					<div className='pt-2'>Total cost: {props.wonkaBarPrice * wonkaBarQuantity} ETH ({props.wonkaBarPrice.toString()} ETH per wonkabar)</div>
 					<Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
 						<Alert.Heading>Oh snap! You got an error!</Alert.Heading>
 						<p>Please try again.</p>

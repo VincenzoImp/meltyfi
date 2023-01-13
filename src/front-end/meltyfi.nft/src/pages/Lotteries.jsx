@@ -1,5 +1,5 @@
 import LotteryCard from '../components/lotteryCard.jsx';
-import { Row, Col, Tabs, Tab } from 'react-bootstrap';
+import { Row, Col, Tabs, Tab, Container } from 'react-bootstrap';
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import { useEffect, useState } from "react";
 import { addressMeltyFiNFT, sdk } from "../App";
@@ -8,6 +8,7 @@ import NftCard from '../components/nftCard.jsx';
 import CreateLottery from '../components/createLottery';
 import { ethers } from "ethers";
 import axios from 'axios';
+import { useAddress } from "@thirdweb-dev/react";
 
 
 
@@ -38,6 +39,7 @@ async function getLotteryInfo(meltyfi, lottery) {
         wonkaBarsMaxSupply,
         wonkaBarsSold,
         wonkaBarPrice,
+        prizeContract
     };
 }
 
@@ -73,7 +75,7 @@ function RenderLotteries() {
             <li className='NoDot'> <b>Sold WonkaBars:</b> {lottery.wonkaBarsSold}/{lottery.wonkaBarsMaxSupply}</li>
         </p>;
         const buyWonkaBar = <BuyWonkaBar nftImg={lottery.image} tokenId={lottery.prizeTokenId} collection={lottery.collection}
-            lotteryId={lottery.lotteryId} expirationDate={dateString} wonkaBarPrice={lottery.wonkaBarPrice} />;
+            lotteryId={lottery.lotteryId} expirationDate={dateString} wonkaBarPrice={lottery.wonkaBarPrice} contract={lottery.prizeContract} />;
         return <Col>
             {LotteryCard({
                 src: lottery.image,
@@ -144,6 +146,8 @@ function RenderNFTs() {
 
 
 function Lotteries() {
+    const address = useAddress();
+    if (address !== undefined) {
     return (
         <Tabs className='Tabs mb-3'
             defaultActiveKey="browse"
@@ -160,6 +164,10 @@ function Lotteries() {
             </Tab>
         </Tabs>
     );
+    }
+    else{
+        return (<Container className="PleaseLogin"><h1>Connect your wallet to see the lotteries</h1></Container>);
+    }
 
 }
 
