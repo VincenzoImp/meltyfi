@@ -1,12 +1,13 @@
-import { Card, Col, Container, Row } from "react-bootstrap";
-import { useAddress } from "@thirdweb-dev/react";
+import {Card, Col, Container, Row} from "react-bootstrap";
+import {useAddress} from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import ChocoChip from "../ABIs/ChocoChip.json";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import LotteryCard from "../components/lotteryCard";
-import { addressMeltyFiNFT, sdk } from "../App";
-import Button from "react-bootstrap/Button";
-import { ethers } from "ethers";
+import {addressMeltyFiNFT, sdk} from "../App";
+import {ethers} from "ethers";
+import MeltWonkaBars from "../components/MeltWonkaBars";
+import RepayLoan from "../components/RepayLoan";
 
 
 async function asyncFilter(arr, predicate) {
@@ -122,6 +123,7 @@ function getOwnedCards(lotteries) {
 }
 
 function getAppliedCards(lotteries, address) {
+    // const [showAlert, setShowAlert] = useState(false);
     const cards = lotteries.map((data) => {
         let first_line,
             second_line,
@@ -141,7 +143,8 @@ function getAppliedCards(lotteries, address) {
         second_line = <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
 
         if (data.state === 0) {
-            third_line = <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+            third_line =
+                <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
         } else {
             let winner;
             if (data.state === 1) {
@@ -154,7 +157,8 @@ function getAppliedCards(lotteries, address) {
         }
 
         if (data.state === 0) {
-            fourth_line = <li className="NoDot"><b>Win percentage:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+            fourth_line =
+                <li className="NoDot"><b>Win percentage:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
         } else {
             let receive;
             if (data.state === 1) {
@@ -217,7 +221,7 @@ function Profile() {
             <Row>{getOwnedCards(owned)}</Row>
             <h2 align='center' className="pt-5">Your WonkaBars</h2>
             <Row>{getAppliedCards(applied, address)}</Row>
-        </Container >;
+        </Container>;
     } else {
         profileSection =
             <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></Container>
