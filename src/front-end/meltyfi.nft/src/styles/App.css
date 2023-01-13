@@ -10,6 +10,19 @@
     color: #725a56;
 }
 
+.CircleLogo {
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+    max-width: 30rem;
+    max-height: 30rem;
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+.HomeParagraph {
+    padding-top: 1.4rem;
+}
+
 .Top {
     padding-top: 1.4rem;
     padding-bottom: 1.4rem;
@@ -97,10 +110,37 @@
     height: 2.5rem;
     background-color: #3d1a0c !important;
     border: #3d1a0c !important;
+    color: #d9ad91 !important;
 }
 
 .PleaseLogin {
     text-align: center;
     margin-top: 16rem;
     margin-bottom: 16rem;
+}
+
+.ChocoBalance {
+    text-align: right;
+}
+
+.LotteriesTitle {
+    padding-top: 1.4rem;
+    padding-bottom: 1.4rem;
+    text-align: center;
+}
+
+.nav-tabs .nav-item .nav-link {
+    border-color: #d9ad91;
+    background-color: #3d1a0c;
+    color: #d9ad91;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    border-color: #d9ad91;
+    background-color: #d9ad91;
+    color: #3d1a0c;
+}
+
+.NoDot {
+    list-style: None;
 }

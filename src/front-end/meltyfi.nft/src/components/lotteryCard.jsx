@@ -1,10 +1,10 @@
-import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
+import { Container } from 'react-bootstrap';
 
-function LotteryCard({src, tokenId, collection, text, lotteryId, action}) {
+function LotteryCard({ src, tokenId, collection, text, lotteryId, action }) {
     return (
         <Card className='Card'>
-            <Card.Img className='CardImg' src={src}/>
+            <Card.Img className='CardImg' src={src} />
             <Card.Body className='CardBody'>
                 <Card.Title className='CardTitle'>
                     {collection} #{tokenId}
@@ -13,7 +13,10 @@ function LotteryCard({src, tokenId, collection, text, lotteryId, action}) {
                     Lottery #{lotteryId}
                 </Card.Text>
                 {text}
-                {action}
+                <Container align='center'>
+                    {action}
+                </Container>
+
             </Card.Body>
         </Card>
     );

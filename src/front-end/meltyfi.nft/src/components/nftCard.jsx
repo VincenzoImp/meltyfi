@@ -1,15 +1,19 @@
-import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
+import { Container } from 'react-bootstrap';
 
-function NftCard({src, tokenId, collection, action}) {
+function NftCard({ src, tokenId, collection, action }) {
     return (
         <Card className='Card'>
-            <Card.Img className='CardImg' src={src}/>
+            <Card.Img className='CardImg' src={src} />
             <Card.Body className='CardBody'>
-                <Card.Title className='CardTitle'>
-                    {collection} #{tokenId}
-                </Card.Title>
-                {action}
+                <Container align='center'>
+                    <Card.Title className='CardTitle'>
+                        {collection} #{tokenId}
+                    </Card.Title>
+                </Container>
+                <Container align='center' className='pt-2'>
+                    {action}
+                </Container>
             </Card.Body>
         </Card>
     );

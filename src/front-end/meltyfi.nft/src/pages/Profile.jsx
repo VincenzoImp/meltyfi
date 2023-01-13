@@ -1,12 +1,12 @@
-import {Card, Col, Container, Row} from "react-bootstrap";
-import {useAddress} from "@thirdweb-dev/react";
+import { Card, Col, Container, Row } from "react-bootstrap";
+import { useAddress } from "@thirdweb-dev/react";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import ChocoChip from "../ABIs/ChocoChip.json";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import LotteryCard from "../components/lotteryCard";
-import {addressMeltyFiNFT, sdk} from "../App";
+import { addressMeltyFiNFT, sdk } from "../App";
 import Button from "react-bootstrap/Button";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 
 
 async function asyncFilter(arr, predicate) {
@@ -101,10 +101,9 @@ async function loadProfileData(address) {
 function getOwnedCards(lotteries) {
     return lotteries.map((data) => {
         let text = <Card.Text>
-            <li>Expire date: {data.expirationDate.toLocaleString()}</li>
-            <li>
-                Wonka Bars
-                sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply} ({data.wonkaBarsSold / data.wonkaBarsMaxSupply * 100}%)
+            <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
+            <li className="NoDot">
+                <b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}
             </li>
         </Card.Text>
         const toRepayETH = ethers.utils.formatUnits(data.amountToRepay, "ether");
@@ -124,7 +123,7 @@ function getOwnedCards(lotteries) {
                         meltyfi = meltyfi.connect(signer);
                         const response = await meltyfi.repayLoan(
                             data.lottery,
-                            {value: ethers.utils.parseEther(toRepayETH.toString())}
+                            { value: ethers.utils.parseEther(toRepayETH.toString()) }
                         );
                         console.log("response", response);
                     }
@@ -137,7 +136,7 @@ function getOwnedCards(lotteries) {
 }
 
 function getAppliedCards(lotteries, address) {
-    return lotteries.map((data) => {
+    const cards = lotteries.map((data) => {
         let first_line,
             second_line,
             third_line,
@@ -151,12 +150,12 @@ function getAppliedCards(lotteries, address) {
         } else {
             state = "Concluded";
         }
-        first_line = <li>State: {state}</li>
+        first_line = <li className="NoDot"><b>State:</b> {state}</li>
 
-        second_line = <li>Expire date: {data.expirationDate.toLocaleString()}</li>
+        second_line = <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
 
         if (data.state === 0) {
-            third_line = <li>WonkaBars sold: {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+            third_line = <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
         } else {
             let winner;
             if (data.state === 1) {
@@ -165,11 +164,11 @@ function getAppliedCards(lotteries, address) {
                 const url = `https://goerli.etherscan.io/address/${data.winner}`;
                 winner = <a href={url}>{data.winner.slice(0, 6)}...{data.winner.slice(-4)}</a>;
             }
-            third_line = <li>Winner: {winner}</li>
+            third_line = <li className="NoDot"><b>Winner:</b> {winner}</li>
         }
 
         if (data.state === 0) {
-            fourth_line = <li>Win percentage: {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
+            fourth_line = <li className="NoDot"><b>Win percentage:</b> {data.wonkaBarsOwned / data.wonkaBarsSold * 100}%</li>
         } else {
             let receive;
             if (data.state === 1) {
@@ -181,7 +180,7 @@ function getAppliedCards(lotteries, address) {
                     receive = "CHOC";
                 }
             }
-            fourth_line = <li>You will receive: {receive}</li>
+            fourth_line = <li className="NoDot"><b>You will receive:</b> {receive}</li>
         }
 
         let action;
@@ -220,6 +219,7 @@ function getAppliedCards(lotteries, address) {
             })}
         </Col>;
     });
+    return <Row>{cards}</Row>
 }
 
 function Profile() {
@@ -233,12 +233,20 @@ function Profile() {
     let profileSection;
     if (address !== undefined) {
         profileSection = <Container>
-            <h3 align="right">ChocoChips: {chocoChips}</h3>
+            <Container className='ChocoBalance'>
+                <Row >
+                    <h3>CHOC balance</h3>
+                </Row>
+                <Row>
+                    <h3>{chocoChips * Math.pow(10, -18)}</h3>
+                </Row>
+            </Container>
+
             <h2>Your active lotteries</h2>
             <Row>{getOwnedCards(owned)}</Row>
             <h2>Your WonkaBars</h2>
             <Row>{getAppliedCards(applied, address)}</Row>
-        </Container>;
+        </Container >;
     } else {
         profileSection =
             <Container className="PleaseLogin"><h1>Connect your wallet to access your profile</h1></Container>
