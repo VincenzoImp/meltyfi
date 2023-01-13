@@ -99,14 +99,14 @@ async function loadProfileData(address) {
 }
 
 function getOwnedCards(lotteries) {
-    return lotteries.map((data) => {
-        let text = <Card.Text>
-            <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
-            <li className="NoDot">
-                <b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}
-            </li>
-        </Card.Text>
+    const cards = lotteries.map((data) => {
         const toRepayETH = ethers.utils.formatUnits(data.amountToRepay, "ether");
+        let text =
+            <Card.Text>
+                <li className="NoDot"><b>Expire date:</b> {data.expirationDate.toLocaleString()}</li>
+                <li className="NoDot"><b>WonkaBars sold:</b> {data.wonkaBarsSold}/{data.wonkaBarsMaxSupply}</li>
+                <li className="NoDot"><b>To repay:</b> {toRepayETH.toString()} ETH</li>
+            </Card.Text>
         return <Col>
             {LotteryCard({
                 src: data.image,
@@ -128,11 +128,12 @@ function getOwnedCards(lotteries) {
                         console.log("response", response);
                     }
                 }>
-                    Repay {toRepayETH.toString()}ETH
+                    Repay Loan
                 </Button>
             })}
         </Col>
     });
+    return <Row align='center'>{cards}</Row>;
 }
 
 function getAppliedCards(lotteries, address) {
@@ -146,7 +147,7 @@ function getAppliedCards(lotteries, address) {
         if (data.state === 0) {
             state = "Active";
         } else if (data.state === 1) {
-            state = "Canceled";
+            state = "Cancelled";
         } else {
             state = "Concluded";
         }
@@ -219,7 +220,7 @@ function getAppliedCards(lotteries, address) {
             })}
         </Col>;
     });
-    return <Row>{cards}</Row>
+    return <Row align='center'>{cards}</Row>
 }
 
 function Profile() {
@@ -233,18 +234,16 @@ function Profile() {
     let profileSection;
     if (address !== undefined) {
         profileSection = <Container>
-            <Container className='ChocoBalance'>
-                <Row >
-                    <h3>CHOC balance</h3>
-                </Row>
-                <Row>
-                    <h3>{chocoChips * Math.pow(10, -18)}</h3>
-                </Row>
-            </Container>
-
-            <h2>Your active lotteries</h2>
+            <Row>
+                <Col></Col>
+                <Col className='ChocoBalanceBox' align='center'>
+                    <h3 className="ChocoBalanceText">{chocoChips * Math.pow(10, -18)} CHOC</h3>
+                </Col>
+                <Col></Col>
+            </Row>
+            <h2 align='center' className="pt-5 ms-0">Your active lotteries</h2>
             <Row>{getOwnedCards(owned)}</Row>
-            <h2>Your WonkaBars</h2>
+            <h2 align='center' className="pt-5">Your WonkaBars</h2>
             <Row>{getAppliedCards(applied, address)}</Row>
         </Container >;
     } else {

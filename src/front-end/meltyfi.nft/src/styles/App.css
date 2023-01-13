@@ -119,8 +119,16 @@
     margin-bottom: 16rem;
 }
 
-.ChocoBalance {
-    text-align: right;
+.ChocoBalanceBox {
+    text-align: center;
+    border-style: solid;
+    border-radius: 1rem;
+    border-color: #d9ad91;
+}
+
+.ChocoBalanceText {
+    padding-top: 0.5rem;
+    text-align: center;
 }
 
 .LotteriesTitle {
@@ -143,4 +151,20 @@
 
 .NoDot {
     list-style: None;
+}
+
+.BgColor1 {
+    background-color: #3d1a0c !important;
+}
+
+.BgColor2 {
+    background-color: #d9ad91 !important;
+}
+
+.TextColor1 {
+    color: #3d1a0c !important;
+}
+
+.TextColor2 {
+    color: #d9ad91 !important;
 }

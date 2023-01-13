@@ -80,7 +80,7 @@ function RenderLotteries() {
             })}
         </Col>
     });
-    return <Row>{cards}</Row>
+    return <Row align='center'>{cards}</Row>
 }
 
 
@@ -134,7 +134,7 @@ function RenderNFTs() {
             })}
         </Col>
     });
-    return <Row>{cards}</Row>;
+    return <Row align='center'>{cards}</Row>;
 }
 
 

@@ -1,13 +1,13 @@
 import './styles/App.css';
 import Bootstrap from './bootstrap';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MyNavbar from './components/MyNavbar';
 import Home from './pages/Home';
 import Lotteries from './pages/Lotteries';
 import Profile from './pages/Profile'
 import MyFooter from './components/MyFooter';
-import {Container} from 'react-bootstrap';
-import {ThirdwebSDK} from "@thirdweb-dev/sdk";
+import { Container } from 'react-bootstrap';
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 /*
 instanziare qui come costante:
@@ -33,20 +33,20 @@ export const sdk = new ThirdwebSDK("goerli");
 function App() {
     return (
         <div className="App">
-            <Bootstrap/>
-            <MyNavbar/>
+            <Bootstrap />
+            <MyNavbar />
             <Container className="Body">
                 <BrowserRouter>
                     <Routes>
-                        <Route path="" element={<Home/>}/>
-                        <Route path="home" element={<Home/>}/>
-                        <Route path="lotteries" element={<Lotteries/>}/>
-                        <Route path="profile" element={<Profile/>}/>
-                        <Route path="*" element={<Home/>}/>
+                        <Route path="" element={<Home />} />
+                        <Route path="home" element={<Home />} />
+                        <Route path="lotteries" element={<Lotteries />} />
+                        <Route path="profile" element={<Profile />} />
+                        <Route path="*" element={<Home />} />
                     </Routes>
                 </BrowserRouter>
             </Container>
-            <MyFooter/>
+            <MyFooter />
         </div>
     );
 }

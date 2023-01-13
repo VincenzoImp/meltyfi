@@ -6,95 +6,104 @@ import Card from 'react-bootstrap/Card';
 import { ethers } from "ethers";
 import MeltyFiNFT from "../ABIs/MeltyFiNFT.json";
 import { addressMeltyFiNFT } from "../App";
-import { Alert } from 'react-bootstrap';
+import { Alert, Row, Col, Container } from 'react-bootstrap';
 
 
 async function buyWonkaBars(wonkaBarPrice, lotteryId) {
 
-  try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    await provider.send("eth_requestAccounts", []);
-    const signer = provider.getSigner();
-    let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
-    meltyfi = meltyfi.connect(signer);
-    await meltyfi.buyWonkaBars(lotteryId, wonkaBarPrice);
-  }
-  catch (err) {
-    return err.name;
-  }
-  return 0;
+	try {
+		const provider = new ethers.providers.Web3Provider(window.ethereum)
+		await provider.send("eth_requestAccounts", []);
+		const signer = provider.getSigner();
+		let meltyfi = new ethers.Contract(addressMeltyFiNFT, MeltyFiNFT, provider);
+		meltyfi = meltyfi.connect(signer);
+		await meltyfi.buyWonkaBars(lotteryId, wonkaBarPrice);
+	}
+	catch (err) {
+		return err.name;
+	}
+	return 0;
 }
 
 function BuyWonkaBar(props) {
-  const [show, setShow] = useState(false);
-  const [showAlert, setShowAlert] = useState(false);
-  const [wonkaBarQuantity, setWonkaBarQuantity] = useState(1);
+	const [show, setShow] = useState(false);
+	const [showAlert, setShowAlert] = useState(false);
+	const [wonkaBarQuantity, setWonkaBarQuantity] = useState(1);
 
-  const handleQuantityChange = (event) => {
-    const input = parseInt(event.target.value);
-    if (isNaN(input) || input <= 0) {
-      setWonkaBarQuantity(1);
-    } else {
-      setWonkaBarQuantity(input);
-    }
-  };
+	const handleQuantityChange = (event) => {
+		const input = parseInt(event.target.value);
+		if (isNaN(input) || input <= 0) {
+			setWonkaBarQuantity(1);
+		} else {
+			setWonkaBarQuantity(input);
+		}
+	};
 
-  const handleShow = () => setShow(true);
-  const handleClose = () => setShow(false);
-  const handleBuy = async () => {
-    const result = await buyWonkaBars(props.wonkaBarPrice * wonkaBarQuantity, props.lotteryId);
-    if (result === 0) {
-      setShow(false);
-    }
-    else {
-      setShowAlert(true);
-      console.log(result);
-    }
-  };
+	const handleShow = () => setShow(true);
+	const handleClose = () => setShow(false);
+	const handleBuy = async () => {
+		const result = await buyWonkaBars(props.wonkaBarPrice * wonkaBarQuantity, props.lotteryId);
+		if (result === 0) {
+			setShow(false);
+		}
+		else {
+			setShowAlert(true);
+			console.log(result);
+		}
+	};
 
-  return (
-    <>
-      <Button className="CardButton" onClick={handleShow}>
-        Buy Wonka Bar
-      </Button>
-      <Modal show={show} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Buy {props.collection} #{props.tokenId} WonkaBars</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Card className='Card'>
-            <Card.Img className='CardImg' src={props.nftImg} />
-          </Card>
-          <Form>
-            <Form.Group className="mb-3" controlId="buyWonkaForm.ControlInput1">
-              <Form.Label>How many wonka bar you want to buy?</Form.Label>
-              <Form.Control
-                type="number"
-                value={wonkaBarQuantity}
-                autoFocus
-                onChange={handleQuantityChange}
-              />
-            </Form.Group>
-          </Form>
-          <p>Total cost: {props.wonkaBarPrice * wonkaBarQuantity}  ethers</p>
-          <Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
-            <Alert.Heading>Oh snap! You got an error!</Alert.Heading>
-            <p>Please try again.</p>
-          </Alert>
+	return (
+		<>
+			<Button className="CardButton" onClick={handleShow}>
+				Buy WonkaBars
+			</Button>
+			<Modal show={show} onHide={handleClose}>
+				<Modal.Header closeButton className='BgColor2 TextColor1'>
+					<Modal.Title>Buy WonkaBars for {props.collection} #{props.tokenId}</Modal.Title>
+				</Modal.Header>
+				<Modal.Body className='BgColor1 TextColor2'>
+					<Container align='center' className='pb-3'>
+						<Card className='Card'>
+							<Card.Img className='CardImg' src={props.nftImg} />
+						</Card>
+					</Container>
+					<Form>
+						<Form.Group className="mb-3" controlId="buyWonkaForm.ControlInput1">
+							<Row>
+								<Col>
+									<Form.Label className='pt-2'>WonkaBar amount to buy</Form.Label>
+								</Col>
+								<Col>
+									<Form.Control
+										type="number"
+										value={wonkaBarQuantity}
+										autoFocus
+										onChange={handleQuantityChange}
+										className='BgColor2 TextColor1'
+									/>
+								</Col>
+							</Row>
+						</Form.Group>
+					</Form>
+					<div className='pt-2'>Total cost: {props.wonkaBarPrice * wonkaBarQuantity} ETH</div>
+					<Alert variant="danger" show={showAlert} onClose={() => setShowAlert(false)} dismissible>
+						<Alert.Heading>Oh snap! You got an error!</Alert.Heading>
+						<p>Please try again.</p>
+					</Alert>
 
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancel purchase
-          </Button>
-          <Button className="CardButton" onClick={handleBuy}>
-            Buy wonka bar
-          </Button>
-        </Modal.Footer>
-      </Modal>
+				</Modal.Body>
+				<Modal.Footer className='BgColor2 TextColor1'>
+					<Button variant="secondary" className="TextColor2" onClick={handleClose}>
+						Cancel
+					</Button>
+					<Button className="CardButton" onClick={handleBuy}>
+						Buy WonkaBars
+					</Button>
+				</Modal.Footer>
+			</Modal>
 
-    </>
-  );
+		</>
+	);
 }
 
 export default BuyWonkaBar;
