@@ -157,7 +157,7 @@ function getAppliedCards(lotteries, address) {
 
         if (data.state === 0) {
             const winProbability = data.wonkaBarsOwned / data.wonkaBarsSold * 100;
-            fourth_line = <li className="NoDot"><b>Win probability:</b> {winProbability}%</li>
+            fourth_line = <li className="NoDot"><b>Win probability:</b> {Math.round(winProbability * 100) / 100}%</li>
         } else {
             let receive;
             if (data.state === 1) {
