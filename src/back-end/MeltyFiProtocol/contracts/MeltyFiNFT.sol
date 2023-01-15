@@ -757,7 +757,7 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
         /// Mint Choco Chips to the owner of the lottery
         _contractChocoChip.mint(
             _msgSender(),
-            totalPaying * _amountChocoChipPerEther
+            (totalPaying - (totalPaying*(100-_royaltyDAOPercentage)/100)) * _amountChocoChipPerEther
         );
         /// Transfer the prize to the owner of the lottery
         lottery.prizeContract.safeTransferFrom(
