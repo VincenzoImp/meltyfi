@@ -1,5 +1,4 @@
 # MeltyFi
-Lending and borrowing platform with NFTs collateral based on lottery tickets fundraising, with farming revenues for lendings, best loan ratio for borrowed and best profitable way to liquidate NFTs
 
 
 sudo apt update
@@ -37,7 +36,7 @@ npx hardhat test
 //open ganache
 
 npx hardhat run --network localhost scripts/deploy.js
-
+//npx hardhat run --network goerli scripts/deploy.js
 
 
 
@@ -56,4 +55,6 @@ npm install axios
 npm install @thirdweb-dev/react @thirdweb-dev/sdk ethers
 
 npm install react-datepicker --save
+
+npm start
 

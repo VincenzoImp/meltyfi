@@ -843,7 +843,9 @@ contract MeltyFiNFT is Ownable, IERC721Receiver, ERC1155Supply, AutomationBase, 
     }
 
     /**
-     * @notice Allows a user to melt their WonkaBars of a specific lottery and receive a refund in return.
+     * @notice Allows a user to melt their WonkaBars of a specific lottery when this is no longer active. 
+     * 	       If the lottery is canceled the sender will receive the refund and ChocoChips. If the lottery 
+     *	       is concluded the sender will receive ChocoChips, and the lottery prize if he is the winner.
      *
      * @dev Raises error if the user does not have enough WonkaBar balance to melt the given amount.
      *      Raises error if the lottery is trashed.
