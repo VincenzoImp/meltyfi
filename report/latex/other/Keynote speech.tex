@@ -1,0 +1,51 @@
+\section{What are NFTs, and what are they used for}
+Non-fungible tokens (NFTs) are digital assets that signify ownership of associated digital items.
+Token “ownership” is recorded and tracked on a blockchain.
+NFTs just like paintings have some value, determined by various factors. 
+An NFT made by a famous artist or part of a limited edition may be more valuable due to its rarity.
+
+\section{NFT as collaterals}
+It is possible to use an NFT as pawn, in order to get cash. 
+Just like in real life, you give an NFT to a decentralized "pawn shop" in exchange for money,
+with the promise of returning the money plus some fees to the pawnbroker, within a certain date.
+If you break the promise by don't returning the money, the pawnbroker keeps your NFT. 
+
+\section{Problems with collateralized loans in DeFi}
+How much money you get from the pawn depends on how much the pawn is worth.
+Besides, after a certain amount of time, the value of an NFT could decrease, of course if the value becomes less than the amount that the borrower has to repay, the lender sends the NFT, because the risk is that the borrower will not pay more money than what the NFT is worth.
+The problem is that it's very difficult to estimate the value of an NFT, since it depends on off chain factors, and it's possible to corrupt things that run off-chain.
+
+\section{What's MeltiFy}
+MeltyFi it's a lending & borrowing platform, there are just 2 agents. 
+What does it mean to borrow in a peer to pool platform 
+What does it mean to l/b in Meltify
+What does happen in peer to pool vs meltify when borrower doesn't repay vs when it does
+
+Our project is called MeltyFi, and avoids the estimation of the price problems with this simple idea.
+An entity, let's call it the borrower, wants some cash, and uses its NFT as a pawn, more technically a collateral, for the loan. 
+It creates a lottery using MeltiFy, setting up an expiry date for the lottery. 
+Tickets to this lottery are bought by lenders. In this way, the borrower gets its cash. If the borrower doesn't return it's money, plus some fees, the lottery is executed, and the winner keeps the NFT. If the borrower returns the money to the lenders before the expire date, the lottery is revoked. Of course the lenders still get some reward for having invested their money from the additional fees that are paid by the borrower.
+
+\subsection{Compromises}
+The only compromise to be made, is that it will be more difficult for the borrower to get the money quickly, however in case of a liquidity problem from the lender, the borrower simply can't have its money.  
+
+\section{Why is blockchain useful and which type we'll use}
+We'll need blockchain and smart contracts for many reason, we have to make sure that once the borrower creates a lottery, it can't drawback its decision, and if it doesn't repay the lenders the ownership of the NFT changes to the lender that wins the lottery. 
+We'll need a ??? blockchain. %permissionless???%
+
+\section{Software architecture diagram}
+%TBD
+
+\section{Summary of MeltiFy}
+To conclude, MeltiFy is a platform that solves liquidity and estimation of  NFTs issues, by creating a lottery that can be revoked if the issuer of the lottery, the borrower, repays the buyers of the tickets. If it doesn't, the winner of the lottery gets the NFT.
+Every entity gains something, the borrower gets cash, with the possibility of having its NFT back, and the lenders either win the lottery, or get the interest for having put their capital on hold. Of course it could also loose the lottery, but the probability of it depends on how many tickets it bought.  
+
+
+
+Use cases
+
+Lender e borrower utenti 
+Cosa fanno?
+O il borrower ritorna i soldi oppure no 
+
+Peer to pool vs Meltify

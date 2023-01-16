@@ -1,0 +1,176 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+\section{Introduction}\label{sec:introduction}
+
+
+blockchain technology 
+    
+
+NFT 
+    definition. too volatility, 
+    examples
+    why are they valuable
+    
+lending and borrowing platform
+    collateral
+    liquidation
+    pool 
+    
+loan with nfts as collateral 
+    peer to peer
+        definition
+        pro 
+        con
+        existings protocols
+    peer to pool
+        definition
+        pro
+        con
+        existings protocols
+    limitations
+
+meltify
+    definition
+    problem solved
+    limitation
+    
+
+
+cosa sono gli nft
+Non-fungible tokens (NFTs) have become popular as unique and non-interchangeable units of
+data that signify ownership of associated digital items, such as images, music, or videos. Token
+“ownership” is recorded and tracked on a blockchain \cite{CRS_NFT}. 
+
+bayc e' una perfetta manifestazione del fenomeno
+
+a causa di molti fattori, e' difficile decifrare il vero valore e quindi definire il giusto prezzo.
+il floor price è un indicatore di prezzo abbastanza onesto \cite{FloorPrice}
+
+questo però e' un fattore offchain e quindi è soggetto a maggior ragione a tante cose che possono alterare, contaminare il corretto valore: volatilita, manipolazioni di mercato, oracle manipulation, e tutti gli attacks che possono essere effettuati durante il meccanismo di consenso di ethereum (sandwitch attack ecc)
+
+a causa di molti fattori, è difficile liquidare gli nft 
+
+utilità degli nft:
+come status symbol, profile picture, tanti altri use case attuali
+
+uno degli ultimi use case è quello di usare nft in defi
+
+la defi sono i protocolli di finanza decentralizzati presenti su ethereun e quindi in blockchain
+questi tipicamente permettono lo swap tra vari asset o il lending e borrowing
+
+vegono quindi usati come colaterale per prestiti, ma a causa dei due problemi principali:l'illiquidità è l'incertezza del loro valore/floor price, è difficile impiegarli come collaterale e occorre fare molti compromessi. loan ratio basso, overcollateralizzazione, floor price dropping, liquidation, illiquidità in acquisto di un nft liquidato, e tanto altro ancora.
+
+spiegazione dei protocolli vigenti e tutte le loro problematiche o rislosuzioni
+peer to peer e peer to pool
+
+notiamo che i due problemi principali sono prima di tutto la liquidazione che dipende da fattori di mercato offchain con tutti i possibili attacchi e instabilità oltre a tutti i problemi che seguono la liquidazione come illiquidità in acquisto di un nft liquidato,
+se si evita questo problema la soluzione sarebbe organizzare un prestito p2p accordandosi su un prezzo e su una deadline e sugli interessi
+questo debella il primo problema ma evince la difficolta di trovare un accordo tra due persone e ad aggravare questo occorre anche che il lender abbia tutto il capitale da prestare e che a fronte di una non restituzuone di questo, il lender sia interessato ad ottenere l'nft a collaterale
+
+spiegazione di meltyfi dettagliata 
+
+meltyfi è un protocollo di prestiti collateralizzati con nft con i benefici del peer to pool e i benefici di p2p evitando tutti i problemi di queste due modalità di lending/borrowing. aggiungendo solo pochissimissimi compromessi per il lender (possibilità di avere il biglietto perdente e perdere dal suo investimento, ma questo dipende da una scelta del lender) per il borroware (non possibilita di avere un flash load, ma uno slow loan nel vendere i biglietti, ma questo dipende dalla lotteria che il borroware organizza e dalla sua bravura di vendere biglietti)
+
+a fronte di compromessi che gli agenti sono disposti personalmente a prendere e tollerare, il sistema funzione e da benefici a tutti rendendo efficiente e molto vantaggioso per tutti quello che prima era difficile da ottenere
+
+ps ricordarsi di confrontare peer2peer e peer2pool e meltyfi riassumendo tutti i pro e contro
+
+
+
+
+
+
+
+
+architettura di meltyfi
+
+token
+
+ticket
+
+possibili problematiche 
+
+
+
+\end{document}
+
+
+motivare che la nostra dapp non e' una piattaforma per pubblicare lotterie con il riservo di annullarle prima della scadenza
+
+meltyfi non e' semplicemente quanto detto sopra perche
+
+mostrare il problema dell'oracle manipulation
+mostrare il fatto che tutti i protocolli di loan backed on nfts as collateral sono soggetti ad attacchi esterni di vario tipo. come Oracle manipulation, floor price problem, imposibile determinare il bene 
+
+soluzione senza problemi si base sull'accordo di due persone con scadenza temporale
+ma occorre il capitale dell'una per l'altra
+
+soluzione far mettere il capitale a piu' persone 
+in caso di inadempienza? a chi dare l'nft 
+soluzione... lotteria
+incentivi e cosi via
+
+importantissimo evidenziare come per prestiti collateralizzati con nft presentanio il problema delle soglia di liquidazione
+
+cio comporta una ipercollateralizzazione per prevenire liquidazioni indesiderate
+
+
+sottolineare anche la modalita' di liquidazione di un nft
+in base alla rapidita e al prezzo
+
+
+
+
+permettiamo loand backed on nfts collateral
+
+
+
+
+
+
+
+
+
+
+
+MeltyFi.NFT
+
+
+- GitHub repo
+https://github.com/VincenzoImp/MeltyFi.NFT
+
+- Report
+https://it.overleaf.com/2444962516sxzpmdrtqhgz
+
+- Meltyfi frontend
+https://meltyfi.nft
+https://meltyfi.dao
+
+- Zoom room
+https://uniroma1.zoom.us/j/85419901259?pwd=bjNGVmNSWFYwU3FkaWE1K1c2bFBSQT09
+
+- Theme inspiration
+https://chocofinance.com
+
+- Similar Dapps
+https://drops.co
+https://liquidnfts.com
+https://www.nftfi.com
+
+- Setup and practice
+https://remix-project.org
+https://metamask.io
+https://goerlifaucet.com
+https://testnets.opensea.io
+https://goerli.etherscan.io
+
+- Resources
+https://youtu.be/gyMwXuJrbJQ
+https://github.com/smartcontractkit/full-blockchain-solidity-course-js
+https://solidity-by-example.org
+https://docs.soliditylang.org/en/v0.8.17
+https://www.tutorialspoint.com/solidity
+https://ethereum.stackexchange.com
+https://github.com/OpenZeppelin/openzeppelin-contracts

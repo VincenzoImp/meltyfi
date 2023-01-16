@@ -1,0 +1,138 @@
+\section{Background}\label{sec:background}
+
+\subsection{Blockchain technology}
+Blockchain is a technology that enables the creation of a \textbf{distributed, immutable and secure ledger of transactions}. It relies on a network of nodes that collaborate to \textbf{maintain a coherent and up-to-date record of transactions}, known as the "blockchain". Each transaction is inserted into a "block" (with others transactions) that is added to the existing chain, creating a history of all transactions made on the network.
+\\
+\indent The security of the blockchain is ensured through the use of public key cryptography to sign transactions and a \textbf{decentralized consensus system} to validate transactions and add new blocks to the chain. The consensus system used depends on the specific blockchain implementation, but the most common ones are Proof of Work (PoW) and Proof of Stake (PoS).
+\\
+\indent One of the main features of the blockchain is its \textbf{transparency}, as all transactions are public and visible to all network participants. However, it is possible to use cryptography to maintain user anonymity and ensure the privacy of transactions.
+\\
+\indent The blockchain has a wide range of applications, from cryptocurrencies to supply chain management, from electronic voting to decentralized finance (DeFi) applications. The flexibility of blockchain technology allows the creation of smart contracts, which enable the automation of complex processes through the execution of secure and tamper-proof code on the network.
+\\
+\indent In addition, the blockchain offers greater security compared to centralized systems as it does \textbf{not rely on a single entity or authority} for its operation and \textbf{is not subject to single point of failure}. This makes the blockchain particularly suitable for scenarios where it is important to ensure the security of transactions and the immutability of data.
+
+\subsubsection{Ethereum blockchain}
+Ethereum is a Proof of Stake blockchain that uses the Ether (\$ETH) as its native coin \cite{whitepaper}. It is the second-largest blockchain per market cap, with more than 180 billion US dollars \cite{coinmarketcap}, just below Bitcoin. One of the reasons for its success is the introduction of smart contracts, pieces of code that are decentralized and execute directly on-chain. Smart contracts allow decentralized applications (DApp) and are fundamental to the so-called Web 3.0.
+
+\subsubsection{Smart contracts}
+Smart contracts are computer programs that run on the blockchain and can automate the process of negotiating. Due to their decentralized nature, smart contracts are considered \textbf{trustworthy and secure}, as their \textbf{code runs uncensorably} and \textbf{cannot be changed} once posted on the blockchain. This makes them particularly suitable for handling transactions and forging contractual relationships where transparency and impartiality are important.
+\\
+\indent Another advantage of smart contracts is their ability to \textbf{eliminate intermediaries}, thus reducing costs and time to negotiate. Furthermore, smart contracts can be used to create incentives for correct user behavior, as the conditions of the contract can be automated in order to penalize users who do not comply with their obligations. Furthermore, smart contracts can be used to create decentralized governance systems, where decisions are made transparently and democratically by all network users.
+
+\subsubsection{Token ERC standard}
+Ethereum smart contracts can be used to create different types of tokens, each of which has specific functions and uses. Let's examine the three main types of Ethereum tokens: ERC-20, ERC-721 and ERC-1155, and explain their characteristics and applications.
+
+\paragraph{ERC-20}
+ERC-20 tokens are the most popular Ethereum token and are the norm for token creation on the platform. They are designed to be \textbf{interchangeable} and to adhere to an interoperability standard, which makes them easy to implement in different DApps and to trade on decentralized marketplaces. ERC20 tokens are typically used to represent units of a certain resource, such as loyalty points or gaming tokens.
+
+\paragraph{ERC-721}
+ERC-721 tokens, by contrast, represent \textbf{unique, non-fungible assets}, such as works of art or real estate. These tokens are used to represent goods that have intrinsic value or are rare or unique. We will analyze them better later.
+
+\paragraph{ERC-1155}
+ERC-1155 tokens represent \textbf{a combination of the first two types of tokens}, ERC-20 and ERC-721, and allow you to manage both fungible and non-fungible assets within a single contract. These tokens are particularly suitable for building decentralized games or representing a collection of assets. Furthermore, they are often used as tickets and are extremely functional because they adapt to the needs of both ERC-20s and ERC-721s.
+
+\subsection{Application domain}
+This section describes the basic concepts and phenomena that will allow us to more clearly understand the purpose of the MeltyFi protocol and the problems it solves. Here we will analyze the phenomenon of NFTs, their value and the manipulations of the latter. We will define in detail what a lending and borrowing platform on blockchain is, one of the most famous use cases of decentralized finance (DeFi); and we will analyze platforms of this kind that make use of NFTs to allow you to obtain loans.
+
+\subsubsection{NFTs}
+\textbf{Non-fungible tokens}(NFTs) have become popular as unique and non-interchangeable units of data that signify ownership of associated digital items, such as images, music, or videos. \textbf{Token "ownership" is recorded and tracked on a blockchain} \cite{ETH_NFT}\cite{CRS_NFT}. 
+\\
+\indent The market for NFTs, transferrable and unique digital assets on public blockchains, has received widespread attention and experienced strong growth since early 2021. Prominent examples of NFTs, such as the \textbf{artist Beeple} selling a piece of digital art for \$69 million \cite{Beeple} or \textbf{Twitter CEO Jack Dorsey} auctioning off his first-ever tweet for \$2.9 million \cite{Twttr}, show that NFTs have received mainstream attention and represent a popular application in FinTech and the cryptocurrency ecosystem. 
+\\
+\indent NFTs are \textbf{unique certificates of authenticity on blockchains} that are usually issued by the creators of the underlying assets. These assets can be digital or physical in nature. Fungible goods such as money or trade goods can be exchanged for goods of the same kind. By contrast, non-fungible items cannot be exchanged for a similar good because their value exceeds the actual material value. Examples from the analogue world include items of artistic or historical significance, or rare trading cards, all of which have a long history of trading in auctions and other marketplaces. In the digital world, it has so far been difficult to trade and auction non-fungible goods, as their authenticity was hard to verify. NFTs now pave the way for the digitization and trade of unique values on the internet \cite{ante2022non}.
+\\
+\indent The Etherum blockchain has welcomed the phenomenon of NFTs and it is precisely on this blockchain that the most famous and valuable NFTs reside \cite{NFT}. 
+
+\subsubsection{NFT floor price}
+Above all due to the non-tangibility and novelty of this type of asset, it is difficult to decipher the true value and therefore define the right price. The floor price is the most used and most established price indicator to determine the value of an NFT. In general, NFT floor prices are an attempt by market participants to gather information about the fair market value of an NFT project at the collection level. This helps focus an NFT buyer's decision-making and analysis by eliminating factors in the collection such as rarity, traits, and more. \cite{FloorPrice}.
+\\
+\indent The floor price, however, is a \textbf{parameter external to the blockchain}, and therefore as such it is \textbf{subject to manipulation} for various purposes. This makes it even more difficult to correctly determine the true value of NFTs, contributing more to increasing their volatility'. \textbf{Two phenomena} of floor price manipulation are described below. Both of these methods intentionally mislead prospective NFT buyers into believing that the fair market value of an NFT is the new floor price when in reality the price is not a result of natural demand. This is harder to factor in compared to other NFT floor price factors, and requires NFT buyers to do their due diligence on NFT ownership metrics, market sales, project community, and more. 
+\paragraph{Sweeping the floor}
+Some NFT collections, often those which are low-priced, can be subject to price manipulation in the form of mass buying. Referred to as "sweeping the floor" in NFT communities, groups or wealthy individuals can make a concentrated effort to raise the floor price. In this scenario, the floor price is defined as the lowest-priced NFT in a collection as priced by marketplaces. 
+\paragraph{Wash trading}
+Another way to manipulate the price is through wash trading, where an individual trades their own NFTs. Simply put, a group or individual with enough NFTs can manipulate the price by listing their own NFTs on a marketplace for a more expensive price, and then buying them to artificially inflate the price \cite{la2022nft}.
+
+\subsubsection{Lending and borrowing platform on blockchain}
+Blockchain lending and borrowing platforms are the main driver of decentralized finance (\textbf{DeFi}) \cite{defi}. These platforms allow users to lend and borrow assets in a \textbf{decentralized manner}, without the need for a central intermediary. These platforms typically use smart contracts to facilitate lending and borrowing transactions, and they often use a variety of different assets as collateral.
+\\
+\indent Before describing the two largest lending and borrowing platforms in Ethereum (Aave and Compound), a few words are necessary to describe the concept of collateralization, loan-to-value, liquidation and liquidity pool \cite{defiterm}. Finally we mention the possible risks in using lending and borrowing platforms on blockchain.
+
+\paragraph{Collateralization}
+Collateralization is a fundamental concept in the financial industry. It simply refers to something you put up as a guarantee when borrowing money. For example, if you take out a bank loan to buy a house, the house will serve as collateral. If you fail to repay your loan, the bank will repossess your home \cite{collateral}.
+\\
+\indent It’s the same in Defi. If you want to borrow some assets from the liquidity pool, you must provide the pool with some other assets as collateral. If you do not repay your loan, the protocol will not return your collateral to you. The collateral will be used to repay your debt to the liquidity pool.
+
+\paragraph{Loan-to-value}
+Loan to value (LTV) \cite{loantovalue} is the ratio of the loan's value to the value of collateral. In a typical financial market, credit scores determine the risk involved in a loan. The lower the credit score, the higher the risk for lenders. Instead of credit scores, the crypto lending process offers asset-backed loans.
+\\
+\indent LTV determines the amount of cryptocurrency one would need as collateral before one could get a loan. The lender holds on to this collateral until the loan is fully paid back. 
+\\
+\indent The main benefit of LTV in crypto lending is that it helps minimize the risk on the lender's part. The user also benefits from LTV in that they can access larger loans at lesser interest rates. 
+
+\paragraph{Liquidation}
+In traditional finance, liquidation occurs when a company or group must sell some of its assets at a loss to cover a debt. DeFi liquidations are similar in that users take out debt from a protocol and provide crypto assets as collateral to back the debt. Thus, DeFi liquidation is the process by which a smart contract sells crypto assets to cover the debt \cite{liquidation}.
+
+\paragraph{Liquidity pool}
+A liquidity pool is a crowdsourced pool of cryptocurrencies or tokens locked in a smart contract that is used to facilitate trades between the assets on a decentralized exchange (DEX). Instead of traditional markets of buyers and sellers, many decentralized finance (DeFi) platforms use automated market makers (AMMs), which allow digital assets to be traded in an automatic and permissionless manner through the use of liquidity pools \cite{liquiditypool}.
+
+\paragraph{Aave}
+Aave is a decentralized non-custodial liquidity protocol where users can participate as depositors or borrowers \cite{aave}. Depositors provide liquidity to the market to earn a passive income, while borrowers are able to borrow in an overcollateralized (perpetually) or undercollateralized (one-block liquidity) fashion. As of the time of writing (Jan. 12, 2022), the total value locked (TVL) in Aave’s smart contracts stands at \$3.78 billion \cite{lamaaave}.
+
+\paragraph{Compound}
+Compound (COMP) is an Ethereum-based lending and borrowing protocol that algorithmically sets interest rates based on the activity in its liquidity pools \cite{compound}. As of the time of writing (Jan. 12, 2022), the total value locked (TVL) in Compound’s smart contracts stands at \$3.59 billion \cite{lamacompound}. As a Compound user, you can lend and borrow some of the most popular cryptocurrencies instantly without having to go through a traditional financial intermediary. It’s one of the largest and oldest lending and borrowing apps in the crypto world.
+\\
+\indent Compound is used extensively by DeFi developers, who programmatically integrate it into their DApps and use the protocol for dynamic borrowing and lending. Many yield aggregation protocols and other DeFi apps make use of Compound. The protocol is also widely used by the general crypto public, not just developers. Non-technical users can borrow funds from Compound by supplying a different crypto coin as collateral.
+
+\paragraph{Risks} \cite{doerr2021defi}
+\begin{itemize}
+    \item \textbf{Liquidation risk}: If the pledged collateral is a volatile crypto asset (such as ETH), and the value drops too far, then the ETH may get liquidated. This is a very undesirable result, as it means that the ETH is sold off after a price drop \cite{qin2021empirical}.
+    \item \textbf{Crypto volatility}: Cryptocurrency is inherently volatile, and using crypto assets to pledge collateral for a loan can lose a user a significant amount of money. First, the funds are locked into the contracts and cannot be accessed until the loan is paid off. Second, the rules for required liquidations mean losing those funds when the value drops. 
+    \item \textbf{Liquidity risk}: Users that deposit crypto may not be able to withdraw funds if the liquidity drops too far. This means that they would need to wait until more crypto is deposited by other users to be able to withdraw funds.
+\end{itemize}
+
+\subsubsection{NFTs as loan collateral}
+Nowadays NFTs can be used as collateral to secure a loan. The loan can work like any other DeFi loan, with the difference that the collateral is the NFT itself. The NFT, by its nature, is comparable to an illiquid asset, so for loans of this type, the lender must agree on the value of the collateral and decide on a loan-to-value in agreement with the borrower. This dynamic is the main aspect that allows the execution of the loan and any repayment or liquidation. As with DeFi loans, those with NFT collateral are also managed by smart contracts, which hold the NFT for the entire duration of the loan.
+
+\paragraph{Advantages} 
+The advantage of NFT collateral loans is that of being able to obtain liquidity from an illiquid asset. In this way it is possible to benefit from the market value of the NFTs held, without the need to sell them. This last aspect is very advantageous if one thinks of the unicity of the NFTs. The nfts, being unique in fact, are not fungible and therefore selling an NFT to then buy back another one does not in any way guarantee that you are buying back exactly the same one that was sold. 
+
+\paragraph{Disadvantages} 
+The disadvantages of NFT collateral are many. The cause of all the disadvantages (according to our personal interpretation) is linked to the difficulty of transforming illiquid assets into liquid assets without incurring any repercussions or compromises. In fact, the blockchain is a closed system and the DeFi that is built on top of it inherits this property. This means that, more specifically in our case, if in a closed system such as DeFi an asset that is illiquid by nature such as an NFT is made illiquid, the system suffers an imbalance, favoring the borrower who wants to benefit of this action (make liquid your NFT). This imbalance in a closed system must necessarily be rebalanced by showing disadvantages for some agents of the system. The latter may be the lenders or the borrower himself in the event that his own action ultimately penalizes him. This explanation just made is an attempt to define the root of all the causes which then generate all the disadvantages that can be encountered by operating with DeFi loans with NFT collateral. 
+\\
+\indent Some of the main possible disadvantages and risks are summarized below. However, this topic has not yet been analyzed in detail in the literature and there are many possible attacks that can undermine loans with NFT collateral. We have collected some articles to help the reader develop a personal idea on this topic \cite{art1}\cite{art2}\cite{art3}\cite{art4}. 
+\begin{itemize}
+    \item \textbf{Market Conditions}: Considering the NFT market is extremely volatile, the value of NFTs fluctuates by the second. With that, lenders risk being stuck with an overvalued NFT if the project plummets in value.
+    \item \textbf{Risk of Default}: If you can’t pay back the loan, you could lose your NFT. Considering many lenders lend less money than a particular NFT might be worth, you could end up losing money in the long run.
+    \item \textbf{Improper Valuation}: An improper proper valuation of an asset means that you run the risk of losing money as a lender. Also, borrowers risk losing the ability to borrow more money if their valuation is undervalued.
+\end{itemize}
+We close the discussion by recalling that in order for a lending and borrowing platform to work well with NFT collateral, it is necessary to defend oneself against all possible negative scenarios that disadvantage the user of the platform itself. 
+
+\paragraph{Existing protocols}
+\begin{itemize}
+    \item Arcade \cite{Arcade}
+    \item BendDAO \cite{BendDAO}
+    \item DropsDAO \cite{DropsDAO}
+    \item JPEG'd \cite{JPEG'd}
+    \item LiquidNFTs \cite{LiquidNFTs}
+    \item nftfi \cite{nftfi}
+    \item NFTGo \cite{NFTGo}
+    \item Pine \cite{Pine}
+    \item reNFT \cite{reNFT}
+    \item X2Y2 \cite{X2Y2}
+\end{itemize}
+
+\subsubsection{Peer-to-peer lending and borrowing with NFTs collateral}
+\paragraph{Definition}
+In peer-to-peer lending and borrowing, the lender and borrower agree on the NFT's value, the length of the term, and the amount of interest. At the end of the expiry date, if the borrower can’t repay the loan in time, the NFT is sent to the lender’s wallet as collateral for the unpaid amount.
+\paragraph{Pro}
+It eliminates the need for a floor price, as the value of the NFT is agreed upon by the two parties involved in the loan. It also eliminates the risk of sudden liquidation.
+\paragraph{Con}
+Achieving agreement between the lender and borrower can be difficult, and a single lender must provide the entire loan amount rather than drawing from a pool of funds provided by multiple lenders. This can limit the availability of loan capital and increase the risk for the lender.
+
+\subsubsection{Peer-to-pool lending and borrowing with NFTs collateral}
+\paragraph{Definition}
+In Peer-to-Pool lending and borrowing, multiple lenders provide liquidity into a pool, and the borrower takes the liquidity from that pool. These pools algorithmically set a threshold for the floor price of the NFT. If it falls below the threshold, is automatically liquidated. 
+\paragraph{Pro}
+Facilitates access to loan capital for borrowers.
+\paragraph{Con}
+The market value of NFTs is highly volatile and can fluctuate rapidly, which can result in the unexpected liquidation of an NFT. 
