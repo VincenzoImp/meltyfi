@@ -1,6 +1,6 @@
 # MeltyFi
 
-
+```
 sudo apt update
 
 sudo apt upgrade
@@ -57,4 +57,3 @@ npm install @thirdweb-dev/react @thirdweb-dev/sdk ethers
 npm install react-datepicker --save
 
 npm start
-
