@@ -1,4 +1,4 @@
-# MeltyFi Protocol
+# MeltyFi
 
 **Making the illiquid liquid** - An innovative peer-to-pool lending and borrowing protocol with NFT collateral
 
