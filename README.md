@@ -2,10 +2,6 @@
 
 **Making the illiquid liquid** - An innovative peer-to-pool lending and borrowing protocol with NFT collateral
 
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/VincenzoImp/MeltyFi.NFT)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-green)](https://meltyfi.nft)
-[![Goerli Testnet](https://img.shields.io/badge/Network-Goerli-orange)](https://goerli.etherscan.io)
-
 ## 🎯 Overview
 
 MeltyFi is a revolutionary DeFi protocol that enables **peer-to-pool lending and borrowing with NFT collateral** through an innovative lottery-based system. Unlike traditional NFT-backed lending platforms, MeltyFi eliminates the risk of involuntary liquidation by operating independently of off-chain factors like floor prices.
