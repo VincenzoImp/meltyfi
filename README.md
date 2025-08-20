@@ -1,55 +1,269 @@
 # MeltyFi
 
-**Making the illiquid liquid** - An innovative peer-to-pool lending and borrowing protocol with NFT collateral
+**Making the illiquid liquid** - An innovative peer-to-pool lending and borrowing protocol with NFT collateral through lottery mechanics
 
 ## 🎯 Overview
 
-MeltyFi is a revolutionary DeFi protocol that enables **peer-to-pool lending and borrowing with NFT collateral** through an innovative lottery-based system. Unlike traditional NFT-backed lending platforms, MeltyFi eliminates the risk of involuntary liquidation by operating independently of off-chain factors like floor prices.
+MeltyFi is a revolutionary DeFi protocol that enables **peer-to-pool lending and borrowing with NFT collateral** through an innovative lottery-based system inspired by Charlie and the Chocolate Factory. Unlike traditional NFT-backed lending platforms, MeltyFi eliminates the risk of involuntary liquidation by operating independently of off-chain factors like floor prices.
 
-### Key Features
+## 🍫 The Chocolate Factory Analogy
 
-- 🔒 **No Liquidation Risk**: NFTs are never forcibly liquidated due to price fluctuations
-- 🎲 **Lottery-Based Funding**: Lenders participate through a transparent lottery system
-- 🏆 **Win-Win Mechanism**: Benefits for both borrowers and lenders
-- 🎮 **Gamified Experience**: WonkaBars (lottery tickets) and ChocoChips (governance tokens)
-- 🌐 **Decentralized**: No dependence on external oracles for price determination
+In MeltyFi, each NFT is like a **chocolate bar**. When borrowers need liquidity:
 
-## 🏗️ Architecture
+1. **🍫 Breaking the Bar**: The NFT (chocolate bar) is divided into **WonkaBars** (chocolate squares)
+2. **💰 Selling Squares**: Lenders buy WonkaBars to fund the loan
+3. **🎫 Golden Ticket**: If the loan isn't repaid, one random WonkaBar contains the "golden ticket" to win the NFT
+4. **🍪 ChocoChips**: All participants earn governance tokens as rewards
+
+This process **"melts"** the illiquid NFT into liquid capital while maintaining fairness for all parties.
+
+## ✨ Key Features
+
+- 🔒 **Zero Liquidation Risk**: NFTs are never forcibly liquidated due to price fluctuations
+- 🎲 **Lottery-Based Funding**: Transparent, fair distribution mechanism
+- 🏆 **Win-Win Design**: Benefits for both borrowers and lenders
+- 🎮 **Gamified Experience**: Engaging chocolate factory theme
+- 🌐 **Fully Decentralized**: No dependence on external price oracles
+- ⚡ **Chainlink Integration**: Provably random winner selection
+
+## 🏗️ Protocol Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   MeltyFiNFT    │    │   MeltyFiDAO    │    │   ChocoChip     │
+│  (Core Logic)   │◄──►│  (Governance)   │◄──►│ (ERC-20 Token)  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│ LogoCollection  │    │ VRF Consumer    │    │   WonkaBars     │
+│ (ERC-1155 Meme) │    │ (Randomness)    │    │ (ERC-1155 Tickets)│
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
 ### Smart Contracts
 
-#### Core Contracts
+#### 🎯 Core Contracts
 - **MeltyFiNFT** (`0x6c1030B8BbE523671Bcfd774Ae59ef620f9f31b4`) - Main protocol logic
 - **MeltyFiDAO** (`0xC4AA65a48fd317070F1A5aC5eBAC70F9d022Fb1e`) - Governance contract
 - **ChocoChip** - ERC-20 governance token with voting capabilities
 - **LogoCollection** - ERC-1155 meme token for protocol branding
 - **VRFv2DirectFundingConsumer** - Chainlink VRF for random winner selection
 
-#### Token Standards
+#### 🎫 Token Standards
 - **ERC-721**: NFT collateral support
 - **ERC-1155**: WonkaBars (lottery tickets) and LogoCollection
 - **ERC-20**: ChocoChip governance token with EIP-2612 permit functionality
 
-### Frontend Architecture
+## 🎲 Lottery States & Behavior
 
-The frontend is built with modern web technologies for optimal user experience:
+### State Diagram
+```
+    [Create Lottery]
+           │
+           ▼
+    ┌─────────────┐
+    │   ACTIVE    │
+    │ (Can buy    │
+    │ WonkaBars)  │
+    └─────────────┘
+           │
+           ├─── Repay Loan ────► [CANCELLED] ──► Refund + ChocoChips
+           │
+           └─── Time Expires ──► [CONCLUDED] ──► Random Winner + ChocoChips
+```
+
+### 🎮 Lottery States Explained
+
+#### 🟢 ACTIVE State
+- **Duration**: From creation until expiration or repayment
+- **Actions**: Lenders can purchase WonkaBars
+- **Funds**: 95% goes to borrower, 5% to DAO treasury
+- **Transition**: Can become CANCELLED (repayment) or CONCLUDED (expiration)
+
+#### 🟡 CANCELLED State  
+- **Trigger**: Borrower repays loan before expiration
+- **Outcome**: NFT returned to borrower
+- **Rewards**: 
+  - Lenders get full refund + ChocoChips
+  - Borrower gets ChocoChips for good behavior
+
+#### 🔴 CONCLUDED State
+- **Trigger**: Expiration date reached without repayment
+- **Winner Selection**: Chainlink VRF randomly selects winner
+- **Rewards**:
+  - Winner gets NFT + ChocoChips
+  - Other lenders get ChocoChips only
+
+#### ⚫ TRASHED State
+- **Condition**: No WonkaBars were ever purchased
+- **Result**: Lottery automatically cleaned up
+
+## 🚀 Protocol Workflows
+
+### 📋 Use Cases Overview
+
+```
+🏦 BORROWER                    🎯 LENDER                    🤖 ORACLE
+     │                            │                            │
+     ├─ Create Lottery            ├─ Buy WonkaBars            ├─ Draw Winner
+     └─ Repay Loan               └─ Melt WonkaBars           └─ (Automation)
+```
+
+### 🔄 Detailed Workflows
+
+#### 1️⃣ **Create Lottery** (Borrower)
+```mermaid
+sequenceDiagram
+    participant B as Borrower
+    participant M as MeltyFiNFT
+    participant N as NFT Contract
+    
+    B->>N: approve(MeltyFiNFT, tokenId)
+    B->>M: createLottery(nftContract, tokenId, price, expiry, maxSupply)
+    M->>N: transferFrom(borrower, MeltyFiNFT, tokenId)
+    M->>M: mint WonkaBars for lottery
+    M-->>B: Lottery created ✅
+```
+
+#### 2️⃣ **Buy WonkaBars** (Lender)
+```mermaid
+sequenceDiagram
+    participant L as Lender
+    participant M as MeltyFiNFT
+    participant B as Borrower
+    participant D as DAO
+    
+    L->>M: buyWonkaBars(lotteryId, quantity) + ETH
+    M->>M: mint WonkaBars to lender
+    M->>B: transfer 95% of payment
+    M->>D: transfer 5% fee
+    M-->>L: WonkaBars received 🎫
+```
+
+#### 3️⃣ **Repay Loan** (Borrower) 
+```mermaid
+sequenceDiagram
+    participant B as Borrower
+    participant M as MeltyFiNFT
+    participant C as ChocoChip
+    
+    B->>M: repayLoan(lotteryId)
+    M->>M: set lottery state to CANCELLED
+    M->>M: transfer NFT back to borrower
+    M->>C: mint ChocoChips to borrower
+    M-->>B: Loan repaid, NFT returned 🎉
+```
+
+#### 4️⃣ **Melt WonkaBars** (Lender)
+```mermaid
+sequenceDiagram
+    participant L as Lender
+    participant M as MeltyFiNFT
+    participant C as ChocoChip
+    
+    alt Lottery CANCELLED
+        L->>M: meltWonkaBars(lotteryId, quantity)
+        M->>L: refund ETH investment
+        M->>C: mint ChocoChips to lender
+        M-->>L: Refund + rewards received 💰
+    else Lottery CONCLUDED (Winner)
+        L->>M: meltWonkaBars(lotteryId, quantity)
+        M->>L: transfer NFT prize
+        M->>C: mint ChocoChips to lender
+        M-->>L: NFT + rewards received 🏆
+    else Lottery CONCLUDED (Non-winner)
+        L->>M: meltWonkaBars(lotteryId, quantity)
+        M->>C: mint ChocoChips to lender
+        M-->>L: ChocoChips received 🍪
+    end
+```
+
+#### 5️⃣ **Draw Winner** (Oracle Automation)
+```mermaid
+sequenceDiagram
+    participant O as Oracle
+    participant M as MeltyFiNFT
+    participant V as VRF Consumer
+    
+    O->>M: checkUpkeep() [expired lotteries?]
+    M-->>O: performData [lottery IDs to conclude]
+    O->>M: performUpkeep(performData)
+    M->>V: requestRandomWords()
+    V-->>M: fulfillRandomWords(requestId, randomWords)
+    M->>M: select winner based on random number
+    M->>M: set lottery state to CONCLUDED
+    M-->>O: Winners drawn for expired lotteries 🎲
+```
+
+## 🎯 Protocol Scenarios
+
+### 📈 **Scenario 1: Successful Repayment**
+1. Borrower creates lottery with valuable NFT
+2. Multiple lenders buy WonkaBars, funding the loan
+3. Borrower receives 95% of funds immediately
+4. Before expiration, borrower repays the loan
+5. **Results**:
+   - ✅ Borrower gets NFT back + ChocoChips
+   - ✅ Lenders get full refund + ChocoChips
+   - ✅ Everyone wins!
+
+### 📉 **Scenario 2: Loan Default**
+1. Borrower creates lottery but cannot repay
+2. Lottery expires and transitions to CONCLUDED
+3. Chainlink VRF randomly selects winner
+4. **Results**:
+   - 🏆 One lucky lender wins the NFT + ChocoChips
+   - 🍪 Other lenders receive ChocoChips as consolation
+   - 💔 Borrower loses NFT but keeps the borrowed funds
+
+## 💻 Frontend Architecture
+
+### 🎨 User Interface
+Built with modern React ecosystem for optimal user experience:
 
 - **React 18** - Component-based UI framework
-- **React-Bootstrap** - Responsive design components
+- **React-Bootstrap** - Responsive design components  
 - **Ethers.js** - Ethereum blockchain interaction
 - **thirdweb** - Web3 authentication and wallet connection
 - **MetaMask** - Primary wallet integration
 - **OpenSea API** - NFT metadata retrieval
 
-## 🚀 Getting Started
+### 📱 Pages & Features
+
+#### 🏠 **Home Page**
+- Protocol introduction and chocolate factory explanation
+- Key features and benefits overview
+- How-to-use guide for new users
+
+#### 🎰 **Lotteries Page**
+- **Browse Lotteries**: View all active lotteries with filtering
+- **Create Lottery**: Select NFTs and set lottery parameters
+- Real-time lottery status and participation data
+- Interactive lottery cards with NFT previews
+
+#### 👤 **Profile Page** 
+- View owned lotteries and their current status
+- Check WonkaBar holdings and win probabilities
+- Monitor ChocoChip balance and transaction history
+- Manage active positions and claim rewards
+
+## 🛠️ Installation & Setup
 
 ### Prerequisites
 
+```bash
+# Required software
 - Node.js (v16 or higher)
 - MetaMask browser extension
-- Goerli testnet ETH ([faucet](https://goerlifaucet.com))
+- Git
 
-### Backend Setup
+# Required tokens  
+- Goerli testnet ETH (from faucet)
+- LINK tokens (for oracle funding)
+```
+
+### 🔧 Backend Setup
 
 ```bash
 # Clone the repository
@@ -59,254 +273,213 @@ cd MeltyFi.NFT/src/back-end/MeltyFiProtocol
 # Install dependencies
 npm install
 
-# Create environment file
+# Environment configuration
 cp .env.example .env
-# Add your ALCHEMY_API_KEY, GOERLI_PRIVATE_KEY, and ETHERSCAN_API_KEY
+# Add your keys:
+# ALCHEMY_API_KEY=your_alchemy_key
+# GOERLI_PRIVATE_KEY=your_private_key  
+# ETHERSCAN_API_KEY=your_etherscan_key
 
-# Compile contracts
+# Compile smart contracts
 npx hardhat compile
 
-# Run tests
+# Run comprehensive test suite
 npx hardhat test
 
 # Deploy to Goerli (if needed)
 npx hardhat run scripts/deploy.js --network goerli
+
+# Verify contracts on Etherscan
+npx hardhat verify --network goerli CONTRACT_ADDRESS
 ```
 
-### Frontend Setup
+### 🎨 Frontend Setup
 
 ```bash
 # Navigate to frontend directory
 cd src/front-end/meltyfi.nft
 
-# Install dependencies
+# Install React dependencies
 npm install
 
 # Start development server
 npm start
+
+# Build for production
+npm run build
 ```
 
 The application will be available at `http://localhost:3000`
 
-### Required Dependencies
+## 📊 Contract Interactions
 
-#### Backend
-```json
-{
-  "@openzeppelin/contracts": "^4.8.0",
-  "@chainlink/contracts": "^0.6.0",
-  "hardhat": "^2.12.0",
-  "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-  "hardhat-docgen": "^1.3.0",
-  "dotenv": "^16.0.0"
-}
+### 🔍 **Reading Contract State**
+
+```solidity
+// Get lottery information
+function getLotteryInfo(uint256 lotteryId) 
+    external view returns (Lottery memory);
+
+// Check WonkaBar balance
+function balanceOf(address account, uint256 lotteryId) 
+    external view returns (uint256);
+
+// Get ChocoChip balance
+function balanceOf(address account) 
+    external view returns (uint256);
+
+// Check if address won lottery
+function isWinner(address account, uint256 lotteryId) 
+    external view returns (bool);
 ```
 
-#### Frontend
-```json
-{
-  "react": "^18.2.0",
-  "react-bootstrap": "^2.5.0",
-  "ethers": "^5.7.0",
-  "@thirdweb-dev/react": "^3.10.0",
-  "@thirdweb-dev/sdk": "^3.10.0"
-}
+### ✍️ **Writing Contract State**
+
+```solidity
+// Create new lottery
+function createLottery(
+    IERC721 _prizeContract,
+    uint256 _prizeTokenId, 
+    uint256 _wonkaBarPrice,
+    uint256 _expirationDate,
+    uint256 _wonkaBarsMaxSupply
+) external;
+
+// Purchase lottery tickets
+function buyWonkaBars(uint256 _lotteryId, uint256 _amount) 
+    external payable;
+
+// Repay loan and cancel lottery  
+function repayLoan(uint256 _lotteryId) external;
+
+// Claim rewards and prizes
+function meltWonkaBars(uint256 _lotteryId, uint256 _amount) 
+    external;
+
+// Manually trigger winner selection
+function drawWinner(uint256 _lotteryId) external;
 ```
 
-## 📖 How It Works
+## 🔐 Security Features
 
-### For Borrowers
-
-1. **Create Lottery**: Select an NFT from your collection as collateral
-2. **Set Parameters**: Define ticket price (in Wei) and expiration date
-3. **Receive Funds**: Get immediate liquidity as tickets are sold
-4. **Repay or Default**: Repay before expiration to get your NFT back, or let the lottery conclude
-
-### For Lenders
-
-1. **Browse Lotteries**: View active lotteries with different NFTs and terms
-2. **Buy WonkaBars**: Purchase lottery tickets with ETH
-3. **Win or Earn**: Win the NFT if selected, or earn ChocoChips for participation
-4. **Governance**: Use ChocoChips for protocol governance decisions
-
-### Lottery States
-
-- **Active**: Tickets can be purchased, funds flow to borrower
-- **Concluded**: Random winner selected, NFT transferred to winner
-- **Cancelled**: Borrower repaid loan, participants get refunds + ChocoChips
-
-## 🎮 User Interface
-
-### Pages
-
-#### Home Page
-- Protocol introduction and explanation
-- Key features and benefits overview
-- Getting started guide
-
-#### Lotteries Page
-- Browse all active lotteries
-- Filter by status and parameters
-- Purchase WonkaBars (lottery tickets)
-- Real-time lottery information
-
-#### Profile Page
-- View owned lotteries and their status
-- Check WonkaBar holdings and win probabilities
-- Monitor ChocoChip balance
-- Manage active positions
-
-#### Create Lottery Tab
-- Select NFTs from connected wallet
-- Set lottery parameters (price, duration)
-- Approve NFT transfer and create lottery
-- Real-time transaction feedback
-
-## 🔧 Technical Implementation
-
-### Smart Contract Features
-
-- **Chainlink VRF**: Provably random winner selection
-- **Chainlink Automation**: Automated lottery conclusion
-- **Gas Optimization**: Efficient batch operations
-- **Access Control**: Role-based permissions
-- **Upgradeable Patterns**: Future-proof architecture
-
-### Frontend Features
-
-- **Responsive Design**: Mobile-first approach with Bootstrap
-- **Real-time Updates**: Live lottery status and blockchain state
-- **Error Handling**: Comprehensive user feedback
-- **MetaMask Integration**: Seamless wallet connection
-- **Transaction Management**: Clear status and confirmation flows
-
-### Security Measures
-
+### 🛡️ **Smart Contract Security**
 - **OpenZeppelin Standards**: Battle-tested contract implementations
-- **Reentrancy Guards**: Protection against common attacks
+- **Reentrancy Guards**: Protection against common attack vectors
+- **Access Control**: Role-based permissions and ownership
 - **Input Validation**: Comprehensive parameter checking
 - **Emergency Controls**: Circuit breakers for critical functions
 
+### 🔒 **Oracle Security** 
+- **Chainlink VRF**: Provably random and tamper-proof randomness
+- **Direct Funding**: Anyone can fund oracles to ensure availability
+- **Fallback Mechanisms**: Manual winner drawing if automation fails
+- **No External Dependencies**: Floor price independence eliminates oracle manipulation
+
+### 🚨 **Protocol Safety**
+- **No Liquidation Risk**: Borrowers cannot lose NFTs unexpectedly
+- **Fair Distribution**: Proportional lottery chances based on investment
+- **Transparent Operations**: All actions recorded on-chain
+- **Automated Processes**: Reduced human error through smart contracts
+
 ## 🌐 Live Deployment
 
-### Mainnet Addresses (Goerli Testnet)
+### 📍 **Contract Addresses (Goerli Testnet)**
 
-- **MeltyFiNFT**: [`0x6c1030B8BbE523671Bcfd774Ae59ef620f9f31b4`](https://goerli.etherscan.io/address/0x6c1030B8BbE523671Bcfd774Ae59ef620f9f31b4)
-- **MeltyFiDAO**: [`0xC4AA65a48fd317070F1A5aC5eBAC70F9d022Fb1e`](https://goerli.etherscan.io/address/0xC4AA65a48fd317070F1A5aC5eBAC70F9d022Fb1e)
+| Contract | Address | Etherscan |
+|----------|---------|-----------|
+| MeltyFiNFT | `0x6c1030B8BbE523671Bcfd774Ae59ef620f9f31b4` | [View](https://goerli.etherscan.io/address/0x6c1030B8BbE523671Bcfd774Ae59ef620f9f31b4) |
+| MeltyFiDAO | `0xC4AA65a48fd317070F1A5aC5eBAC70F9d022Fb1e` | [View](https://goerli.etherscan.io/address/0xC4AA65a48fd317070F1A5aC5eBAC70F9d022Fb1e) |
 
-### Live Applications
-
+### 🚀 **Live Applications**
 - **MeltyFi.NFT DApp**: [https://meltyfi.nft](https://meltyfi.nft)
 - **MeltyFi.DAO DApp**: [https://meltyfi.dao](https://meltyfi.dao) *(Coming Soon)*
 
-### Example Transactions
-
+### 📝 **Example Transactions**
 - **Create Lottery**: [`0xe68f3f6...`](https://goerli.etherscan.io/tx/0xe68f3f68b00dce4c299d0205dfbc72c302ae4d5e089b16d3c024755db70ffdf3)
 - **Melt WonkaBars**: [`0xd957d27...`](https://goerli.etherscan.io/tx/0xd957d276b5499f6ad40e62a47ad9fd74f255f0a6fc6e1240903fd8aaf1337c3f)
 
+## ⚠️ Known Limitations
+
+### 🐌 **Protocol Limitations**
+- **Slow Funding**: Loans require multiple lenders to participate
+- **Uncertainty**: Three possible outcomes create complexity for lenders
+- **Gas Costs**: Complex lottery mechanics increase transaction costs
+- **Testnet Only**: Currently deployed on Goerli for testing
+
+### 🔧 **Technical Limitations**
+- **Oracle Dependency**: Relies on Chainlink for automation and randomness
+- **Frontend Gaps**: DAO interface not yet implemented
+- **Scalability**: May face congestion on mainnet deployment
+
+## 🚀 Future Roadmap
+
+### 🎯 **Phase 1: Production Ready**
+- ✅ Mainnet deployment with audited contracts
+- ✅ Layer 2 integration (Polygon, Arbitrum, Optimism)
+- ✅ Enhanced security audits and bug bounties
+- ✅ Mobile-responsive interface improvements
+
+### 🎯 **Phase 2: Advanced Features**
+- 🔄 Dutch auction lottery mechanisms
+- 🎯 Multi-NFT collateral lotteries
+- 💎 Fractional NFT support
+- 🏪 NFT marketplace integration
+
+### 🎯 **Phase 3: Ecosystem Expansion**
+- 📱 Native mobile application
+- 🌉 Cross-chain bridge functionality
+- 🏛️ Fully functional DAO governance
+- 🎮 Gamification enhancements
+
 ## 👥 Team
 
-- **Vincenzo Imperati** - Project Manager, Backend Developer, Designer
-- **Benigno Ansanelli** - Frontend Developer (Lottery Functionality), Documentation
-- **Andrea Princic** - Frontend Developer (Profile Functionality), UX Design
-
-## 🛠️ Development Tools
-
-### Blockchain Development
-- **Hardhat** - Development environment and testing framework
-- **Remix** - Online Solidity IDE for contract development
-- **Alchemy** - Ethereum node provider
-- **Etherscan** - Contract verification and monitoring
-
-### Frontend Development
-- **Create React App** - Development bootstrapping
-- **React Router** - Client-side routing
-- **Web3 Modal** - Wallet connection management
-
-### External APIs
-- **OpenSea Testnets API** - NFT metadata and collection data
-- **Chainlink Oracles** - VRF and Automation services
-
-## 📚 Documentation
-
-### Generated Documentation
-- Smart contract documentation is auto-generated using `hardhat-docgen`
-- Available in the `/docs` directory after compilation
-
-### Research Paper
-- Comprehensive academic report available in LaTeX format
-- Covers background, implementation, and analysis
-- Located in `/report/latex/` directory
-
-## 🔄 Workflow Examples
-
-### Creating a Lottery
-
-```solidity
-// 1. Approve NFT transfer
-nftContract.approve(meltyFiAddress, tokenId);
-
-// 2. Create lottery
-meltyFi.createLottery(
-    nftContractAddress,
-    tokenId,
-    ticketPrice,
-    expirationTimestamp,
-    maxTickets
-);
-```
-
-### Participating in a Lottery
-
-```solidity
-// Purchase WonkaBars (lottery tickets)
-meltyFi.buyWonkaBars(lotteryId, quantity, { value: totalCost });
-```
-
-### Claiming Rewards
-
-```solidity
-// Melt WonkaBars to claim NFT or ChocoChips
-meltyFi.meltWonkaBars(lotteryId, quantity);
-```
-
-## 🚧 Known Limitations
-
-- **Goerli Testnet Only**: Currently deployed on testnet for testing
-- **Oracle Dependency**: Relies on Chainlink services for automation
-- **Gas Costs**: Complex operations may have higher gas requirements
-- **UI Completeness**: DAO interface not yet implemented
-
-## 🔮 Future Roadmap
-
-- **Mainnet Deployment**: Production deployment on Ethereum mainnet
-- **Layer 2 Support**: Polygon, Arbitrum, and Optimism integration
-- **Advanced Features**: Dutch auctions, multi-NFT lotteries
-- **Mobile App**: Native mobile application development
-- **Cross-chain**: Bridge to multiple blockchain networks
+| Team Member | Role | Responsibilities |
+|-------------|------|------------------|
+| **Vincenzo Imperati** | Project Manager & Backend Developer | Smart contract development, system architecture, project coordination |
+| **Benigno Ansanelli** | Frontend Developer | Lottery interface, user experience, documentation |
+| **Andrea Princic** | Frontend Developer & UX Designer | Profile management, sequence diagrams, use case design |
 
 ## 🤝 Contributing
 
-We welcome contributions! Please feel free to submit issues, feature requests, or pull requests.
+We welcome contributions from the community! Here's how you can help:
 
-### Development Guidelines
-1. Follow existing code style and conventions
-2. Add tests for new functionality
-3. Update documentation as needed
-4. Test on Goerli testnet before submitting
+### 🔧 **Development Guidelines**
+1. Fork the repository and create a feature branch
+2. Follow existing code style and conventions
+3. Add comprehensive tests for new functionality
+4. Update documentation as needed
+5. Test thoroughly on Goerli testnet
+
+### 📋 **Contribution Areas**
+- 🐛 Bug fixes and security improvements
+- ✨ New features and enhancements
+- 📚 Documentation and tutorials
+- 🎨 UI/UX improvements
+- 🧪 Testing and quality assurance
 
 ## 📄 License
 
-This project is open source. Please refer to the repository for license details.
+This project is open source. Please refer to the repository for specific license details.
 
-## 🔗 Links
+## 🔗 Important Links
 
+### 🌐 **Project Resources**
 - **GitHub Repository**: [VincenzoImp/MeltyFi.NFT](https://github.com/VincenzoImp/MeltyFi.NFT)
 - **Live Application**: [meltyfi.nft](https://meltyfi.nft)
 - **Documentation**: Available in repository `/docs` directory
+
+### 🔧 **Development Tools**
 - **Goerli Faucet**: [goerlifaucet.com](https://goerlifaucet.com)
 - **OpenSea Testnet**: [testnets.opensea.io](https://testnets.opensea.io)
+- **Remix IDE**: [remix.ethereum.org](https://remix.ethereum.org)
+
+### 📚 **Educational Resources**  
+- **Ethereum Documentation**: [ethereum.org](https://ethereum.org)
+- **OpenZeppelin Contracts**: [openzeppelin.com](https://openzeppelin.com)
+- **Chainlink Documentation**: [docs.chain.link](https://docs.chain.link)
 
 ---
 
-**MeltyFi Protocol** - Revolutionizing NFT-backed lending through innovative lottery mechanics and decentralized governance.
+**MeltyFi Protocol** - Where Charlie's chocolate factory meets DeFi innovation! 🍫✨
+
+*Making illiquid NFTs liquid through the magic of lottery mechanics and community-driven finance.*
